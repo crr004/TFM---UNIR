@@ -1,0 +1,13 @@
+DOCUMENTACIÓN DE LOS CONJUNTOS DE DATOS:
+
+En este fichero se deben documentar todos los datos que se utilizan para el proyecto, incluyendo de donde provienen, si son sintéticos o no, enlace de descarga, nombre, autor y acceso.
+
+A) Fake News Detector Spanish News Edition (Kaggle): https://www.kaggle.com/code/msantrod/fake-news-detector-spanish-news-edition/input?select=train.csv
+
+B) The Spanish Fake News Corpus (Github): https://github.com/jpposadas/FakeNewsCorpusSpanish
+
+C) Fake-news-latam-omdena (Hugging Face): https://huggingface.co/datasets/IsaacRodgz/Fake-news-latam-omdena
+
+D) Spanish Political Fake News (Kaggle): https://www.kaggle.com/datasets/javieroterovizoso/spanish-political-fake-news
+
+
