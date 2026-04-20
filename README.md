@@ -2,13 +2,37 @@
 
 Este repositorio contiene los scripts y notebooks necesarios para el desarrollo del Trabajo de Fin de Máster.
 
-## `data_preparation.py`
 
-Este script se encarga de preparar los datos para concatenar datasets de diferentes fuentes. En concreto, se encarga de: 
+## `Data`
+
+Contiene los datasets utilizados en el proyecto.
+
+### `Data/Bin`
+
+Contiene los scripts necesarios para preparar los datos para el clasificador binario.
+
+### `Data/Topic`
+
+Contiene los scripts necesarios para preparar los datos para el clasificador de tópicos.
+
+
+### `Data/prepare_data_bin.py`
+
+Este script se encarga de preparar los datos para el clasificador binario. En concreto, se encarga de: 
     * Cargar los datasets de diferentes fuentes.
     * Preprocesar los datos.
     * Concatenar los datasets.
     * Guardar los datasets concatenados.
+
+### `Data/prepare_data_topic.py`
+
+Este script se encarga de preparar los datos para el clasificador de tópicos. En concreto, se encarga de: 
+    * Cargar los datasets de diferentes fuentes.
+    * Preprocesar los datos.
+    * Concatenar los datasets.
+    * Guardar los datasets concatenados.
+
+---
 
 ## `EDA/Eda_Dataset_Binario.ipynb`
 
