@@ -1,4 +1,3 @@
-Data_Bin_Classifier.csv
-Data_Topic_Classifier.csv
-
-Topic/
+Data/Topic/Dataset_Topic_Classifier.csv
+Data/Topic/MLSUM
+Data/Bin/Data_Bin_Classifier.csv

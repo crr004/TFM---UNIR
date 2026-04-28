@@ -20,4 +20,4 @@ Este dataset es el resultado de concatenar los siguientes datasets:
 
     * Más de 260.000 noticias reales extraídas de medios en castellano (solo en su partición de entrenamiento), lo que lo hace mucho más grande que los anteriores.
 
-    * Se deben descargar los archivos de train y validation.
+    * Se deben descargar los archivos de train, validation y test.
