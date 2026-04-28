@@ -1,23 +1,42 @@
-# DOCUMENTACIÓN DE LOS CONJUNTOS DE DATOS:
+# Preprocesado de datos
 
-En la Carpeta `Data` se encuentran los conjuntos de datos que se utilizan para el proyecto. La documentación de estos es la siguiente:
+1. Carga y corrección de datos  
+   * Lectura del dataset en formato CSV  
+   * Corrección de problemas de codificación (encoding) en los textos  
 
-## `Data_Bin_Classifier.csv` (generado por `prepare_data_bin.py`)
+2. Construcción del texto  
+   * Unión del título y el contenido en un único texto completo  
 
-Este dataset es el resultado de concatenar los siguientes datasets:
+3. Eliminación de duplicados  
+   * Eliminación de noticias repetidas para evitar sesgos en el modelo  
 
-* `Fake News Detector Spanish News Edition (Kaggle)`: https://www.kaggle.com/code/msantrod/fake-news-detector-spanish-news-edition/input?select=train.csv
+4. Limpieza básica  
+   * Pasar todo el texto a minúsculas  
+   * Eliminar URLs  
+   * Eliminar correos electrónicos  
+   * Eliminar caracteres especiales innecesarios  
 
-* `The Spanish Fake News Corpus (Github)`: https://github.com/jpposadas/FakeNewsCorpusSpanish
+5. Normalización  
+   * Reducir múltiples espacios a uno solo  
+   * Normalizar repeticiones de caracteres (ej: "holaaaa" → "hola")  
 
-* `Fake-news-latam-omdena (Hugging Face)`: https://huggingface.co/datasets/IsaacRodgz/Fake-news-latam-omdena
+6. Tratamiento de números  
+   * Sustituir números por un token genérico ("numero")  
 
-* `Spanish Political Fake News (Kaggle)`: https://www.kaggle.com/datasets/javieroterovizoso/spanish-political-fake-news
+7. Filtrado de texto  
+   * Eliminación de tokens no alfabéticos  
+   * Eliminación de palabras muy cortas  
 
-## `Data_Topic_Classifier.csv` (generado por `prepare_data_topic.py`)
+8. Lematización  
+   * Reducción de las palabras a su forma base mediante spaCy  
+   * Eliminación de stopwords (manteniendo negaciones como "no")  
 
-* `MLSUM (Multilingual Summarization Corpus) - Subconjunto en Español`: https://huggingface.co/datasets/reciTAL/mlsum/tree/refs%2Fconvert%2Fparquet/es
+9. Variable objetivo  
+   * Conversión de la etiqueta booleana (True/False) a formato numérico (1/0)  
 
-    * Más de 260.000 noticias reales extraídas de medios en castellano (solo en su partición de entrenamiento), lo que lo hace mucho más grande que los anteriores.
+10. Generación del dataset final  
+   * Creación del texto limpio listo para modelado  
+   * Exportación del dataset en formato CSV para su uso posterior
 
-    * Se deben descargar los archivos de train y validation.
+
+
