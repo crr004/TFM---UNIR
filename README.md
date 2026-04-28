@@ -38,7 +38,7 @@ Este script se encarga de preparar los datos para el clasificador de tópicos. E
 
 Este notebook se encarga de realizar un análisis exploratorio de Data_Bin_Classifier.csv, que será el conjunto de datos dedicado a predecir si un documento es verdadero o falso.
 
-## `EDA/Eda_Dataset_Multiclase.ipynb`
+## `EDA/Eda_Dataset_Topic.ipynb`
 
 Este notebook se encarga de realizar un análisis exploratorio de Data_Multi_Classifier.csv, que será el conjunto de datos dedicado a predecir la categoría de un documento (político, social, económico, etc.). 
 
