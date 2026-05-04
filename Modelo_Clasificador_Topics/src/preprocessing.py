@@ -5,8 +5,9 @@
 # Responsabilidades:
 #   - Cargar el dataset CSV de noticias.
 #   - Agrupar los 212 tópicos originales en 9 categorías principales.
-#   - Limpiar el texto con expresiones regulares.
-#   - Procesar el texto con spaCy (lematización + eliminación de stopwords).
+#   - Filtrar textos no españoles (langdetect).
+#   - Limpiar el texto con expresiones regulares mejoradas.
+#   - Procesar el texto con spaCy (lematización + stopwords + reemplazo NER).
 #   - Generar representación TF-IDF y dividir en train/test.
 #   - Serializar los artefactos (vectorizador TF-IDF, LabelEncoder).
 #
@@ -14,6 +15,7 @@
 
 import os
 import re
+import unicodedata
 import joblib
 
 import numpy as np
@@ -26,16 +28,53 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from tqdm.auto import tqdm
 
+# Importación condicional de langdetect (puede no estar instalado en inferencia)
+try:
+    from langdetect import detect as langdetect_detect
+    LANGDETECT_AVAILABLE = True
+except ImportError:
+    LANGDETECT_AVAILABLE = False
+
+
+# ==============================================================================
+# CONSTANTES
+# ==============================================================================
+
+# Modelo spaCy a usar (lg = más pesado y preciso para NER)
+SPACY_MODEL_NAME = "es_core_news_lg"
+
+# Mapeo de etiquetas NER de spaCy → placeholders para el vocabulario TF-IDF.
+# Esto generaliza el vocabulario: "Pedro Sánchez" y "Pablo Casado" se convierten
+# ambos en "__PERSONA__", ayudando al modelo a aprender que la presencia de
+# personas es relevante para el tópico, sin depender de nombres específicos.
+NER_MAP = {
+    'PER': '__PERSONA__',
+    'ORG': '__ORGANIZACION__',
+    'LOC': '__LUGAR__',
+    'GPE': '__LUGAR__',          # Entidades geopolíticas (ciudades, países)
+    'MISC': '__ENTIDAD__',
+}
+
+# Whitelist de stopwords cortas que SÍ aportan significado semántico y no deben
+# eliminarse durante el filtrado. Estas palabras, pese a ser stopwords y/o tener
+# menos de 3 caracteres, alteran el sentido de la frase.
+STOPWORD_WHITELIST = {'no', 'sí', 'ni'}
+
 
 # ==============================================================================
 # 1. CARGA DEL MODELO SPACY
 # ==============================================================================
 
-def _load_spacy_model(model_name="es_core_news_sm"):
+def _load_spacy_model(model_name=None):
     """
     Carga el modelo spaCy especificado.
     Si no está instalado, lo descarga automáticamente.
+    Se usa el modelo 'es_core_news_lg' por defecto para maximizar la
+    precisión del reconocimiento de entidades nombradas (NER).
     """
+    if model_name is None:
+        model_name = SPACY_MODEL_NAME
+
     try:
         nlp = spacy.load(model_name)
         print(f"[spaCy] Modelo '{model_name}' cargado correctamente.")
@@ -58,6 +97,11 @@ def map_topic(topic):
     """
     Agrupa los 212 tópicos originales del dataset MLSUM en 9 categorías
     principales para reducir la dimensionalidad del problema de clasificación.
+
+    Esto es necesario porque el dataset original tiene etiquetas muy granulares
+    (ej: 'ccaa catalunya', 'ccaa madrid', 'ccaa valencia') que representan
+    variantes del mismo concepto. Agruparlas mejora el balance de clases y
+    la capacidad de generalización del modelo.
     """
     topic = str(topic).lower()
 
@@ -112,47 +156,211 @@ def map_topic(topic):
 
 
 # ==============================================================================
-# 3. LIMPIEZA DE TEXTO
+# 3. DETECCIÓN DE IDIOMA
+# ==============================================================================
+
+def _detect_language_safe(text):
+    """
+    Detecta el idioma de un texto usando langdetect.
+    Retorna el código de idioma ('es', 'en', 'fr', etc.) o 'unknown' si falla.
+
+    NOTA: langdetect usa un enfoque probabilístico basado en n-gramas.
+    Un texto en español que contenga nombres en inglés (equipos NBA,
+    anglicismos, etc.) será correctamente identificado como español
+    porque el grueso del texto sigue siendo castellano.
+    Solo se filtran textos donde la lengua DOMINANTE no es español.
+    """
+    try:
+        return langdetect_detect(text)
+    except Exception:
+        return 'unknown'
+
+
+def filter_non_spanish(df, text_column='Content', min_length=200):
+    """
+    Filtra registros cuyo texto no esté en español.
+
+    Parámetros:
+        df:           DataFrame con los datos.
+        text_column:  Columna sobre la que detectar el idioma.
+        min_length:   Longitud mínima de texto para aplicar detección.
+                      Textos más cortos se mantienen (langdetect es impreciso
+                      con textos muy cortos).
+
+    Retorna:
+        DataFrame filtrado y el número de registros eliminados.
+    """
+    if not LANGDETECT_AVAILABLE:
+        print("[Preprocesamiento] AVISO: 'langdetect' no instalado. "
+              "Se omite el filtro de idioma.")
+        return df, 0
+
+    print(f"[Preprocesamiento] Detectando idioma en {len(df)} textos...")
+    tqdm.pandas(desc="Detectando idioma")
+
+    # Solo aplicamos detección a textos suficientemente largos
+    mask_long = df[text_column].str.len() >= min_length
+    languages = pd.Series('es', index=df.index)  # por defecto: español
+    languages[mask_long] = df.loc[mask_long, text_column].progress_apply(
+        _detect_language_safe
+    )
+
+    # Mantener textos en español o con idioma desconocido (beneficio de la duda)
+    mask_spanish = languages.isin(['es', 'unknown'])
+    n_removed = (~mask_spanish).sum()
+
+    # Reportar distribución de idiomas detectados
+    lang_counts = languages[~mask_spanish].value_counts()
+    if len(lang_counts) > 0:
+        print(f"[Preprocesamiento] Textos no españoles eliminados: {n_removed}")
+        print(f"[Preprocesamiento] Distribución de idiomas eliminados:")
+        for lang, count in lang_counts.head(10).items():
+            print(f"  - {lang}: {count}")
+    else:
+        print(f"[Preprocesamiento] Todos los textos están en español.")
+
+    return df[mask_spanish].copy(), n_removed
+
+
+# ==============================================================================
+# 4. LIMPIEZA DE TEXTO
 # ==============================================================================
 
 def regex_clean(text):
-    """Limpieza básica con expresiones regulares."""
+    """
+    Limpieza exhaustiva de texto con expresiones regulares.
+
+    Pasos aplicados (en orden):
+    1. Conversión a minúsculas.
+    2. Normalización de caracteres Unicode (comillas tipográficas, guiones
+       largos, etc.) a sus equivalentes ASCII.
+    3. Eliminación de URLs (http, https, www y dominios sueltos).
+    4. Eliminación de emails.
+    5. Eliminación de tags HTML.
+    6. Normalización de repeticiones de caracteres (holaaaa → hola).
+    7. Eliminación de secuencias numéricas.
+    8. Eliminación de caracteres no alfabéticos (conservando tildes y ñ).
+    9. Colapso de espacios múltiples.
+    """
     text = str(text).lower()
+
+    # Normalización Unicode: convertir caracteres tipográficos a ASCII
+    # (comillas "curvas", guiones largos, etc.)
+    text = unicodedata.normalize('NFKD', text)
+    # Recomponer caracteres descompuestos (mantener tildes como un solo char)
+    text = unicodedata.normalize('NFC', text)
+
+    # URLs (incluyendo dominios sueltos como example.com)
     text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'\S+\.\w{2,4}(?:/\S*)?', '', text)  # dominios sueltos
+
+    # Emails
+    text = re.sub(r'\S+@\S+', '', text)
+
+    # Tags HTML
     text = re.sub(r'<.*?>', '', text)
+
+    # Normalizar repeticiones de caracteres (holaaaa → hola)
+    text = re.sub(r'(.)\1{2,}', r'\1', text)
+
+    # Eliminar secuencias numéricas
+    text = re.sub(r'\d+', ' ', text)
+
+    # Solo letras españolas y espacios
     text = re.sub(r'[^a-záéíóúñü\s]', ' ', text)
+
+    # Colapsar espacios múltiples
     text = re.sub(r'\s+', ' ', text).strip()
+
     return text
 
 
+# ==============================================================================
+# 5. PROCESAMIENTO NLP CON SPACY (LEMATIZACIÓN + NER)
+# ==============================================================================
+
 def spacy_clean_batch(texts, nlp, batch_size=256):
     """
-    Procesamiento avanzado con spaCy (lematización + filtrado de stopwords).
+    Procesamiento avanzado con spaCy:
+    1. Reconocimiento de Entidades Nombradas (NER): las entidades se reemplazan
+       por placeholders genéricos (__PERSONA__, __LUGAR__, __ORGANIZACION__, etc.)
+       para generalizar el vocabulario y que el modelo aprenda a discriminar
+       por tipo de entidad, no por nombres propios específicos.
+    2. Lematización: reduce cada palabra a su forma base (corrieron → correr).
+    3. Filtrado de stopwords (excepto las de la whitelist: 'no', 'sí', 'ni').
+    4. Filtrado de tokens residuales (< 3 caracteres, excepto whitelist).
+
     Utiliza nlp.pipe para procesamiento en lotes eficiente.
+    El componente 'parser' se desactiva por eficiencia (no se necesita análisis
+    de dependencias). El componente 'ner' se MANTIENE ACTIVO.
     """
     cleaned_docs = []
+
     for doc in tqdm(
-        nlp.pipe(texts, batch_size=batch_size, disable=["parser", "ner"]),
+        nlp.pipe(texts, batch_size=batch_size, disable=["parser"]),
         total=len(texts),
-        desc="Procesando NLP"
+        desc="Procesando NLP (lematización + NER)"
     ):
-        tokens = [
-            token.lemma_
-            for token in doc
-            if not token.is_stop and not token.is_punct and not token.is_space
-        ]
+        # 1. Identificar qué tokens pertenecen a entidades NER
+        ent_token_indices = {}
+        for ent in doc.ents:
+            for token in ent:
+                ent_token_indices[token.i] = ent
+
+        # 2. Procesar cada token
+        tokens = []
+        processed_ents = set()  # evitar duplicar entidades multi-token
+
+        for token in doc:
+            if token.i in ent_token_indices:
+                # Token es parte de una entidad NER
+                ent = ent_token_indices[token.i]
+                ent_id = (ent.start, ent.end)
+
+                if ent_id not in processed_ents:
+                    processed_ents.add(ent_id)
+                    placeholder = NER_MAP.get(ent.label_, '__ENTIDAD__')
+                    tokens.append(placeholder)
+                # Si ya procesamos esta entidad, simplemente skip
+            else:
+                # Token normal: aplicar lematización y filtrado
+                lemma = token.lemma_.lower()
+
+                # Conservar stopwords de la whitelist
+                if token.is_stop and lemma not in STOPWORD_WHITELIST:
+                    continue
+
+                # Filtrar puntuación y espacios
+                if token.is_punct or token.is_space:
+                    continue
+
+                # Filtrar tokens no alfabéticos
+                if not token.is_alpha:
+                    continue
+
+                # Filtrar tokens muy cortos (< 3 chars), excepto whitelist
+                if len(lemma) < 3 and lemma not in STOPWORD_WHITELIST:
+                    continue
+
+                tokens.append(lemma)
+
         cleaned_docs.append(" ".join(tokens))
+
     return cleaned_docs
 
 
 # ==============================================================================
-# 4. PIPELINE COMPLETO DE PREPROCESAMIENTO
+# 6. PIPELINE COMPLETO DE PREPROCESAMIENTO
 # ==============================================================================
 
 def load_and_prepare_data(csv_path):
     """
-    Carga el dataset CSV, aplica agrupación de tópicos,
-    limpieza de nulos/duplicados, y procesamiento NLP completo.
+    Carga el dataset CSV, aplica toda la cadena de preprocesamiento:
+    1. Agrupación de tópicos (212 → 9 categorías).
+    2. Limpieza estructural (nulos, duplicados, textos vacíos).
+    3. Filtro de idioma (descarta textos no españoles).
+    4. Limpieza regex (URLs, emails, HTML, Unicode, repeticiones, números).
+    5. Procesamiento NLP con spaCy (lematización + NER + filtrado).
 
     Retorna el DataFrame con las columnas:
         - Title, Content, Topic_Grouped, Cleaned_Content
@@ -161,45 +369,69 @@ def load_and_prepare_data(csv_path):
     df = pd.read_csv(csv_path)
     print(f"[Preprocesamiento] Registros iniciales: {len(df)}")
 
-    # 1. Agrupación de tópicos
+    # === PASO 1: Agrupación de tópicos ===
+    print("\n[Preprocesamiento] Paso 1/6: Agrupando tópicos (212 → 9 categorías)...")
     df['Topic_Grouped'] = df['Topic'].apply(map_topic)
 
-    # 2. Eliminación de nulos y vacíos en campos críticos
+    # === PASO 2: Limpieza estructural ===
+    print("[Preprocesamiento] Paso 2/6: Limpieza estructural...")
+    # Eliminar nulos
+    n_before = len(df)
     df = df.dropna(subset=['Title', 'Content', 'Topic_Grouped']).copy()
     df = df[(df['Title'].str.strip() != '') & (df['Content'].str.strip() != '')]
+    print(f"  - Nulos/vacíos eliminados: {n_before - len(df)}")
 
-    # 3. Eliminación de duplicados
-    initial_count = len(df)
+    # Eliminar duplicados
+    n_before = len(df)
     df = df.drop_duplicates(subset=['Title', 'Content'])
-    print(f"[Preprocesamiento] Duplicados eliminados: {initial_count - len(df)}")
+    print(f"  - Duplicados eliminados: {n_before - len(df)}")
 
-    # 4. Unión de Título + Contenido
+    # Filtrar textos extremadamente cortos (probables errores de parseo CSV)
+    n_before = len(df)
+    df = df[df['Content'].str.len() >= 100]
+    print(f"  - Textos cortos (< 100 chars) eliminados: {n_before - len(df)}")
+
+    # === PASO 3: Filtro de idioma ===
+    print("\n[Preprocesamiento] Paso 3/6: Filtrado de idioma...")
+    df, n_lang_removed = filter_non_spanish(df)
+    print(f"  - Total tras filtro de idioma: {len(df)}")
+
+    # === PASO 4: Unión de Título + Contenido ===
+    print("\n[Preprocesamiento] Paso 4/6: Uniendo Título + Contenido...")
     df['Texto_Completo'] = df['Title'] + " " + df['Content']
 
-    # 5. Limpieza con Regex
-    print("[Preprocesamiento] Aplicando limpieza Regex...")
+    # === PASO 5: Limpieza con Regex ===
+    print("[Preprocesamiento] Paso 5/6: Aplicando limpieza Regex exhaustiva...")
     tqdm.pandas(desc="Limpieza Regex")
     df['Regex_Content'] = df['Texto_Completo'].progress_apply(regex_clean)
 
-    # 6. Procesamiento con spaCy
-    print("[Preprocesamiento] Aplicando procesamiento spaCy (lematización + stopwords)...")
+    # === PASO 6: Procesamiento con spaCy (Lematización + NER) ===
+    print("\n[Preprocesamiento] Paso 6/6: Procesamiento NLP con spaCy...")
+    print(f"  - Modelo: {SPACY_MODEL_NAME}")
+    print("  - NER ACTIVO: las entidades se reemplazarán por tipo genérico")
     nlp = _load_spacy_model()
     texts_to_process = df['Regex_Content'].tolist()
     df['Cleaned_Content'] = spacy_clean_batch(texts_to_process, nlp)
 
-    # 7. Limpieza de columnas intermedias
+    # Limpiar columnas intermedias
     df = df.drop(columns=['Regex_Content', 'Texto_Completo'])
     df = df.reset_index(drop=True)
 
-    print(f"[Preprocesamiento] Registros finales: {len(df)}")
-    print(f"[Preprocesamiento] Distribución de clases:")
-    print(df['Topic_Grouped'].value_counts())
+    # Eliminar registros que quedaron vacíos tras el procesamiento
+    n_before = len(df)
+    df = df[df['Cleaned_Content'].str.strip() != '']
+    print(f"\n[Preprocesamiento] Textos vacíos tras NLP eliminados: {n_before - len(df)}")
+
+    print(f"\n[Preprocesamiento] === RESUMEN ===")
+    print(f"  Registros finales: {len(df)}")
+    print(f"  Distribución de clases:")
+    print(df['Topic_Grouped'].value_counts().to_string(header=False))
 
     return df
 
 
 # ==============================================================================
-# 5. TF-IDF + SPLIT + GUARDADO DE ARTEFACTOS
+# 7. TF-IDF + SPLIT + GUARDADO DE ARTEFACTOS
 # ==============================================================================
 
 def build_tfidf_and_split(df, max_features=30000, test_size=0.2, random_state=42):

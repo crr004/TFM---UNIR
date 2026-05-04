@@ -127,7 +127,7 @@ def train_xgboost(
 
     # --- Guardar modelo ---
     os.makedirs(output_dir, exist_ok=True)
-    model_path = os.path.join(output_dir, "xgboost_topic_classifier.ubj")
+    model_path = os.path.join(output_dir, "xgboost_topic_classifier.pkl")
     model.save_model(model_path)
     print(f"[Train] Modelo guardado en: {model_path}")
 

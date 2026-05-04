@@ -109,15 +109,7 @@ def cmd_evaluate(args):
     cache_dir = os.path.join(artifacts_dir, "cache")
     cache_path = os.path.join(cache_dir, "preprocessed_data.pkl")
 
-    model_path_ubj = os.path.join(artifacts_dir, "xgboost_topic_classifier.ubj")
-    model_path_pkl = os.path.join(artifacts_dir, "xgboost_topic_classifier.pkl")
-
-    if os.path.isfile(model_path_ubj):
-        model_path = model_path_ubj
-    elif os.path.isfile(model_path_pkl):
-        model_path = model_path_pkl
-    else:
-        model_path = None
+    model_path = os.path.join(artifacts_dir, "xgboost_topic_classifier.pkl")
 
     if not os.path.isfile(cache_path):
         print("[Main] ERROR: No se encontraron datos preprocesados.")
