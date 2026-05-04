@@ -137,6 +137,7 @@ desktop.ini
 
 # Project-specific generated files
 Data/Bin/Data_Bin_Classifier.csv
+dataset_preprocesado_binario.csv
 
 # Coverage
 coverage.xml
