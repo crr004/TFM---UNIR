@@ -1,0 +1,7 @@
+===== TEXTO ORIGINAL =====
+
+Piden a Pedro Sánchez comparecer en el Congreso por los casos de policías infiltrados Más País, Compromís, ERC, JxCat, EH Bildu, BNG y la CUP han presentado una solicitud conjunta para que el jefe del Ejecutivo dé explicaciones sobre los casos de agentes encubiertos destapados por el medio La Directa.
+
+===== TEXTO PROCESADO =====
+
+pedir pedro sánchez comparecer congreso caso policía infiltrado país compromís erc jxcat eh bildu bng cup presentar solicitud conjunto jefe ejecutivo dar explicación caso agente encubierto destapado directa

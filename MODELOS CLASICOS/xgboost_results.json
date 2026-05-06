@@ -1,7 +1,7 @@
 {
     "model": "XGBoost",
     "best_threshold": 0.56,
-    "training_time_seconds": 25.5422,
+    "training_time_seconds": 24.532,
     "metrics": {
         "accuracy": 0.9018,
         "precision": 0.8875,

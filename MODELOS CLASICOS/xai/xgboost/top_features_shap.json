@@ -1,0 +1,82 @@
+[
+    {
+        "feature": "bárcena",
+        "importance": 1.1869796514511108
+    },
+    {
+        "feature": "lertxundi",
+        "importance": 0.9265212416648865
+    },
+    {
+        "feature": "josé primo",
+        "importance": 0.9258744716644287
+    },
+    {
+        "feature": "jordi sevilla",
+        "importance": 0.9236074090003967
+    },
+    {
+        "feature": "erc",
+        "importance": 0.8992730975151062
+    },
+    {
+        "feature": "boluarte",
+        "importance": 0.7739455699920654
+    },
+    {
+        "feature": "equo",
+        "importance": 0.7662485241889954
+    },
+    {
+        "feature": "cospedal",
+        "importance": 0.7607530355453491
+    },
+    {
+        "feature": "carlos prieto",
+        "importance": 0.7548151612281799
+    },
+    {
+        "feature": "compromís",
+        "importance": 0.7264025211334229
+    },
+    {
+        "feature": "campoamor",
+        "importance": 0.7252326011657715
+    },
+    {
+        "feature": "aznar",
+        "importance": 0.6746051907539368
+    },
+    {
+        "feature": "fac",
+        "importance": 0.654895007610321
+    },
+    {
+        "feature": "enciso",
+        "importance": 0.631269097328186
+    },
+    {
+        "feature": "rodríguez rubio",
+        "importance": 0.6233305931091309
+    },
+    {
+        "feature": "maría cataluña",
+        "importance": 0.6088011264801025
+    },
+    {
+        "feature": "teo",
+        "importance": 0.584617018699646
+    },
+    {
+        "feature": "fernandez",
+        "importance": 0.5799928307533264
+    },
+    {
+        "feature": "pau ricom",
+        "importance": 0.5579733848571777
+    },
+    {
+        "feature": "eduardo rubiño",
+        "importance": 0.5534014105796814
+    }
+]

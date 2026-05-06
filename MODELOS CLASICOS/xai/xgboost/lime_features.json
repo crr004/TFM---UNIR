@@ -1,0 +1,66 @@
+{
+    "original_text": "Piden a Pedro Sánchez comparecer en el Congreso por los casos de policías infiltrados Más País, Compromís, ERC, JxCat, EH Bildu, BNG y la CUP han presentado una solicitud conjunta para que el jefe del Ejecutivo dé explicaciones sobre los casos de agentes encubiertos destapados por el medio La Directa.",
+    "processed_text": "pedir pedro sánchez comparecer congreso caso policía infiltrado país compromís erc jxcat eh bildu bng cup presentar solicitud conjunto jefe ejecutivo dar explicación caso agente encubierto destapado directa",
+    "features": [
+        {
+            "feature": "ERC",
+            "weight": 0.4184223234716543
+        },
+        {
+            "feature": "Bildu",
+            "weight": 0.30108245858005206
+        },
+        {
+            "feature": "BNG",
+            "weight": -0.2673070010103773
+        },
+        {
+            "feature": "Pedro",
+            "weight": -0.16785286004809805
+        },
+        {
+            "feature": "Compromís",
+            "weight": 0.14401378635322581
+        },
+        {
+            "feature": "Sánchez",
+            "weight": -0.05689117923583375
+        },
+        {
+            "feature": "sobre",
+            "weight": 0.024012548769180565
+        },
+        {
+            "feature": "País",
+            "weight": 0.023481731526207025
+        },
+        {
+            "feature": "EH",
+            "weight": 0.021370665216360586
+        },
+        {
+            "feature": "JxCat",
+            "weight": 0.013287350321545053
+        },
+        {
+            "feature": "CUP",
+            "weight": 0.012690529558418116
+        },
+        {
+            "feature": "comparecer",
+            "weight": 0.011376504182018344
+        },
+        {
+            "feature": "por",
+            "weight": -0.01022856212524176
+        },
+        {
+            "feature": "los",
+            "weight": -0.008773127907778497
+        },
+        {
+            "feature": "Ejecutivo",
+            "weight": 0.007466787642032369
+        }
+    ]
+}

@@ -1,0 +1,66 @@
+{
+    "original_text": "Cosidó rechazó un contrato de 9,5 millones de Defensa con una empresa que dirigió Morenés PP acusa al exministro de Defensa, Pedro Morenés, de favorecer a la empresa MBDA de la que él había sido presidente y a la que su predecesora, María Dolores de Jordi Xuclà, había contratado por 9,5 millones de euros.",
+    "processed_text": "cosidar rechazar contrato numero millón defensa empresa dirigir morenés acusar exministro defensa pedro morenés favorecer empresa mbda presidente predecesora maría dolor jordi xucl contratar numero millón euros",
+    "features": [
+        {
+            "feature": "Jordi",
+            "weight": -0.19482386809101437
+        },
+        {
+            "feature": "Pedro",
+            "weight": -0.1333500218689607
+        },
+        {
+            "feature": "Morenés",
+            "weight": 0.12415542057714413
+        },
+        {
+            "feature": "María",
+            "weight": -0.09394052102601767
+        },
+        {
+            "feature": "él",
+            "weight": 0.056317473576317
+        },
+        {
+            "feature": "Defensa",
+            "weight": -0.05054460366005764
+        },
+        {
+            "feature": "exministro",
+            "weight": 0.030366373549645772
+        },
+        {
+            "feature": "presidente",
+            "weight": -0.027430612359944345
+        },
+        {
+            "feature": "favorecer",
+            "weight": -0.024911846085986
+        },
+        {
+            "feature": "acusa",
+            "weight": 0.022027912772643897
+        },
+        {
+            "feature": "contratado",
+            "weight": 0.021112860293421153
+        },
+        {
+            "feature": "euros",
+            "weight": 0.020763458849885796
+        },
+        {
+            "feature": "Cosidó",
+            "weight": -0.020673440477596335
+        },
+        {
+            "feature": "contrato",
+            "weight": -0.019650303021174657
+        },
+        {
+            "feature": "Dolores",
+            "weight": 0.013401305766987231
+        }
+    ]
+}

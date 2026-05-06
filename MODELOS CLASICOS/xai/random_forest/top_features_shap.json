@@ -1,0 +1,82 @@
+[
+    {
+        "feature": "num_mayusculas",
+        "importance": 0.009734186704058402
+    },
+    {
+        "feature": "eaj",
+        "importance": 0.008957464135286936
+    },
+    {
+        "feature": "equo",
+        "importance": 0.008072529437140593
+    },
+    {
+        "feature": "eaj pnv",
+        "importance": 0.0076680353946222465
+    },
+    {
+        "feature": "bng",
+        "importance": 0.007518621197763674
+    },
+    {
+        "feature": "per",
+        "importance": 0.006900217650950705
+    },
+    {
+        "feature": "per catalunya",
+        "importance": 0.006691257520285044
+    },
+    {
+        "feature": "vers",
+        "importance": 0.006174923624916383
+    },
+    {
+        "feature": "iniciativo vers",
+        "importance": 0.006044265680403985
+    },
+    {
+        "feature": "narbona",
+        "importance": 0.00594789219468391
+    },
+    {
+        "feature": "psoe",
+        "importance": 0.0057065140778321
+    },
+    {
+        "feature": "sánchez",
+        "importance": 0.005696609993724271
+    },
+    {
+        "feature": "vers per",
+        "importance": 0.005401752279889618
+    },
+    {
+        "feature": "cristina",
+        "importance": 0.005350969364000808
+    },
+    {
+        "feature": "pnv",
+        "importance": 0.0051720618612774985
+    },
+    {
+        "feature": "iniciativo",
+        "importance": 0.004992686528448915
+    },
+    {
+        "feature": "catalunya",
+        "importance": 0.0044049724216156895
+    },
+    {
+        "feature": "canarias",
+        "importance": 0.0041175531995839435
+    },
+    {
+        "feature": "cristina narbona",
+        "importance": 0.003780245188823915
+    },
+    {
+        "feature": "erc",
+        "importance": 0.00376355481102931
+    }
+]

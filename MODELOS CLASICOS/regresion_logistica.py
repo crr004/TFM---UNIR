@@ -51,12 +51,13 @@ numeric_features = [
 # -------------------------
 # 3. Selección de columnas
 # -------------------------
-df = df[['text_ml', 'label'] + numeric_features].dropna()
+df = df[['text_ml', 'full_text', 'label'] + numeric_features].dropna()
 
 # -------------------------
 # 4. Variables
 # -------------------------
 X_text = df['text_ml']
+X_text_full = df['full_text']
 X_num = df[numeric_features]
 y = df['label']
 
@@ -67,10 +68,16 @@ y = df['label']
 # -------------------------
 # 5. Primer split -> TRAIN (70) y TEMP (30)
 # -------------------------
-X_text_train, X_text_temp, X_num_train, X_num_temp, y_train, y_temp = train_test_split(
+X_text_train, X_text_temp, \
+X_text_full_train, X_text_full_temp, \
+X_num_train, X_num_temp, \
+y_train, y_temp = train_test_split(
+
     X_text,
+    X_text_full,
     X_num,
     y,
+
     test_size=0.30,
     random_state=42,
     stratify=y
@@ -79,11 +86,17 @@ X_text_train, X_text_temp, X_num_train, X_num_temp, y_train, y_temp = train_test
 # -------------------------
 # 6. Segundo split -> VALIDATION (10) y TEST (20)
 # -------------------------
-X_text_val, X_text_test, X_num_val, X_num_test, y_val, y_test = train_test_split(
+X_text_val, X_text_test, \
+X_text_full_val, X_text_full_test, \
+X_num_val, X_num_test, \
+y_val, y_test = train_test_split(
+
     X_text_temp,
+    X_text_full_temp,
     X_num_temp,
     y_temp,
-    test_size=2/3,  # 20% test y 10% val del total
+
+    test_size=2/3,
     random_state=42,
     stratify=y_temp
 )
@@ -135,6 +148,11 @@ X_test_num = scaler.transform(X_num_test)
 X_train_final = hstack([X_train_tfidf, X_train_num])
 X_val_final = hstack([X_val_tfidf, X_val_num])
 X_test_final = hstack([X_test_tfidf, X_test_num])
+
+# convertir a CSR para permitir slicing
+X_train_final = X_train_final.tocsr()
+X_val_final = X_val_final.tocsr()
+X_test_final = X_test_final.tocsr()
 
 # =========================================================
 # MODELO
@@ -445,3 +463,346 @@ with open("logistic_regression_results.json", "w", encoding="utf-8") as f:
 
 print("\nResultados guardados en:")
 print("logistic_regression_results.json")
+
+# =========================================================
+# 28. EXPLICABILIDAD (SHAP + LIME)
+# =========================================================
+
+# INSTALAR:
+# pip install shap lime
+
+import shap
+
+from lime.lime_text import LimeTextExplainer
+
+from scipy.special import expit
+
+import os
+
+# =========================================================
+# CREAR CARPETA
+# =========================================================
+
+os.makedirs("xai/logistic_regression", exist_ok=True)
+
+# =========================================================
+# FEATURE NAMES
+# =========================================================
+
+# nombres TF-IDF
+tfidf_feature_names = vectorizer.get_feature_names_out()
+
+# nombres numéricos
+all_feature_names = list(tfidf_feature_names) + numeric_features
+
+# =========================================================
+# SHAP
+# =========================================================
+
+print("\n================================================")
+print("GENERANDO EXPLICACIONES SHAP")
+print("================================================")
+
+# =========================================================
+# SAMPLE PARA SHAP
+# =========================================================
+
+# para no consumir demasiada RAM
+sample_size = 200
+
+X_shap_sample = X_test_final[:sample_size]
+
+# =========================================================
+# SHAP EXPLAINER
+# =========================================================
+
+explainer = shap.LinearExplainer(
+    model,
+    X_train_final,
+)
+
+# =========================================================
+# SHAP VALUES
+# =========================================================
+
+shap_values = explainer.shap_values(X_shap_sample)
+
+# =========================================================
+# SHAP SUMMARY PLOT
+# =========================================================
+
+plt.figure()
+
+shap.summary_plot(
+    shap_values,
+    X_shap_sample,
+    feature_names=all_feature_names,
+    max_display=30,
+    show=False
+)
+
+plt.tight_layout()
+
+plt.savefig(
+    "xai/logistic_regression/shap_summary_plot.png",
+    bbox_inches='tight'
+)
+
+plt.close()
+
+print("[OK] shap_summary_plot.png")
+
+# =========================================================
+# SHAP BAR PLOT
+# =========================================================
+
+plt.figure()
+
+shap.summary_plot(
+    shap_values,
+    X_shap_sample,
+    feature_names=all_feature_names,
+    plot_type="bar",
+    max_display=30,
+    show=False
+)
+
+plt.tight_layout()
+
+plt.savefig(
+    "xai/logistic_regression/shap_bar_plot.png",
+    bbox_inches='tight'
+)
+
+plt.close()
+
+print("[OK] shap_bar_plot.png")
+
+# =========================================================
+# SHAP WATERFALL
+# =========================================================
+
+sample_index = 0
+
+# convertir sparse -> dense SOLO 1 sample
+sample_dense = X_shap_sample[sample_index].toarray()[0]
+
+# explicación
+explanation = shap.Explanation(
+    values=shap_values[sample_index],
+    base_values=explainer.expected_value,
+    data=sample_dense,
+    feature_names=all_feature_names
+)
+
+plt.figure()
+
+shap.plots.waterfall(
+    explanation,
+    show=False
+)
+
+plt.savefig(
+    "xai/logistic_regression/shap_waterfall_plot.png",
+    bbox_inches='tight'
+)
+
+plt.close()
+
+print("[OK] shap_waterfall_plot.png")
+
+# guardar texto explicado
+with open(
+    "xai/logistic_regression/shap_explained_text.txt",
+    "w",
+    encoding="utf-8"
+) as f:
+
+    f.write("===== TEXTO ORIGINAL =====\n\n")
+    f.write(X_text_full_test.iloc[sample_index])
+
+    f.write("\n\n===== TEXTO PROCESADO =====\n\n")
+    f.write(X_text_test.iloc[sample_index])
+
+# =========================================================
+# TOP FEATURES JSON
+# =========================================================
+
+mean_abs_shap = np.abs(shap_values).mean(axis=0)
+
+top_idx = np.argsort(mean_abs_shap)[::-1][:20]
+
+top_features = []
+
+for idx in top_idx:
+
+    top_features.append({
+        "feature": all_feature_names[idx],
+        "importance": float(mean_abs_shap[idx])
+    })
+
+with open(
+    "xai/logistic_regression/top_features_shap.json",
+    "w",
+    encoding="utf-8"
+) as f:
+
+    json.dump(
+        top_features,
+        f,
+        indent=4,
+        ensure_ascii=False
+    )
+
+print("[OK] top_features_shap.json")
+
+# =========================================================
+# LIME
+# =========================================================
+
+print("\n================================================")
+print("GENERANDO EXPLICACIONES LIME")
+print("================================================")
+
+# =========================================================
+# MAPPING FULL_TEXT -> TEXT_ML
+# =========================================================
+
+text_mapping_dict = dict(
+    zip(
+        X_text_full_test,
+        X_text_test
+    )
+)
+
+# =========================================================
+# FUNCIÓN PREDICT PROBA PARA LIME
+# =========================================================
+
+def predict_proba_lime(texts):
+
+    processed_texts = []
+
+    for text in texts:
+
+        # usar texto procesado correspondiente
+        if text in text_mapping_dict:
+
+            processed_texts.append(
+                text_mapping_dict[text]
+            )
+
+        else:
+            # fallback
+            processed_texts.append(text)
+
+    # TF-IDF
+    tfidf = vectorizer.transform(processed_texts)
+
+    # features numéricas vacías
+    numeric_zeros = np.zeros(
+        (len(processed_texts), len(numeric_features))
+    )
+
+    # combinar
+    final = hstack([tfidf, numeric_zeros])
+
+    final = final.tocsr()
+
+    # probabilidades
+    probs = model.predict_proba(final)
+
+    return probs
+
+# =========================================================
+# LIME EXPLAINER
+# =========================================================
+
+lime_explainer = LimeTextExplainer(
+    class_names=["REAL", "FAKE"]
+)
+
+# =========================================================
+# SAMPLE TEXT
+# =========================================================
+# mapping entre texto original y procesado
+xai_text_mapping = pd.DataFrame({
+    "full_text": X_text_full_test.reset_index(drop=True),
+    "processed_text": X_text_test.reset_index(drop=True)
+})
+
+sample_full_text = xai_text_mapping.iloc[15]["full_text"]
+
+sample_processed_text = xai_text_mapping.iloc[15]["processed_text"]
+
+# =========================================================
+# GENERAR EXPLICACIÓN
+# =========================================================
+
+lime_exp = lime_explainer.explain_instance(
+    sample_full_text,
+    predict_proba_lime,
+    num_features=15
+)
+
+# =========================================================
+# GUARDAR HTML
+# =========================================================
+
+lime_exp.save_to_file(
+    "xai/logistic_regression/lime_explanation.html"
+)
+
+print("[OK] lime_explanation.html")
+
+# =========================================================
+# GUARDAR FEATURES LIME JSON
+# =========================================================
+
+lime_data = {
+    "original_text": sample_full_text,
+    "processed_text": sample_processed_text,
+    "features": []
+}
+
+for feature, weight in lime_exp.as_list():
+
+    lime_data["features"].append({
+        "feature": feature,
+        "weight": float(weight)
+    })
+
+with open(
+    "xai/logistic_regression/lime_features.json",
+    "w",
+    encoding="utf-8"
+) as f:
+
+    json.dump(
+        lime_data,
+        f,
+        indent=4,
+        ensure_ascii=False
+    )
+
+print("[OK] lime_features.json")
+
+# =========================================================
+# RESUMEN FINAL
+# =========================================================
+
+print("\n================================================")
+print("XAI COMPLETADO")
+print("================================================")
+
+print("\nArchivos generados:")
+
+print("\nSHAP:")
+print("- shap_summary_plot.png")
+print("- shap_bar_plot.png")
+print("- shap_waterfall_plot.png")
+print("- top_features_shap.json")
+
+print("\nLIME:")
+print("- lime_explanation.html")
+print("- lime_features.json")

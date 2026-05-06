@@ -41,13 +41,14 @@ numeric_features = [
     'num_quotes'
 ]
 
-df = df[['text_ml', 'label'] + numeric_features].dropna()
+df = df[['text_ml', 'full_text', 'label'] + numeric_features].dropna()
 
 # -------------------------
 # 2. Variables
 # -------------------------
 X_text = df['text_ml']
 X_num = df[numeric_features]
+X_text_full = df['full_text']
 y = df['label']
 
 # =========================================================
@@ -57,8 +58,13 @@ y = df['label']
 # -------------------------
 # 3. TRAIN (70) y TEMP (30)
 # -------------------------
-X_text_train, X_text_temp, X_num_train, X_num_temp, y_train, y_temp = train_test_split(
+X_text_train, X_text_temp, \
+X_text_full_train, X_text_full_temp, \
+X_num_train, X_num_temp, \
+y_train, y_temp = train_test_split(
+
     X_text,
+    X_text_full,
     X_num,
     y,
     test_size=0.30,
@@ -69,8 +75,12 @@ X_text_train, X_text_temp, X_num_train, X_num_temp, y_train, y_temp = train_test
 # -------------------------
 # 4. VALIDATION (10) y TEST (20)
 # -------------------------
-X_text_val, X_text_test, X_num_val, X_num_test, y_val, y_test = train_test_split(
+X_text_val, X_text_test, \
+X_text_full_val, X_text_full_test, \
+X_num_val, X_num_test, \
+y_val, y_test = train_test_split(
     X_text_temp,
+    X_text_full_temp,
     X_num_temp,
     y_temp,
     test_size=2/3,
@@ -463,3 +473,365 @@ with open("random_forest_results.json", "w", encoding="utf-8") as f:
 
 print("\nResultados guardados en:")
 print("random_forest_results.json")
+
+# =========================================================
+# 32. EXPLICABILIDAD (SHAP + LIME)
+# =========================================================
+
+# INSTALAR:
+# pip install shap lime
+
+import shap
+import matplotlib.pyplot as plt
+import os
+
+from lime.lime_text import LimeTextExplainer
+
+# =========================================================
+# CREAR CARPETA
+# =========================================================
+
+os.makedirs("xai/random_forest", exist_ok=True)
+
+# =========================================================
+# FEATURE NAMES
+# =========================================================
+
+tfidf_feature_names = vectorizer.get_feature_names_out()
+
+all_feature_names = list(tfidf_feature_names) + numeric_features
+
+# =========================================================
+# CONVERTIR A CSR
+# =========================================================
+
+X_train_final = X_train_final.tocsr()
+X_test_final = X_test_final.tocsr()
+
+# =========================================================
+# SHAP
+# =========================================================
+
+print("\n================================================")
+print("GENERANDO EXPLICACIONES SHAP")
+print("================================================")
+
+# =========================================================
+# SAMPLE SHAP
+# =========================================================
+
+sample_size = 200
+
+X_shap_sample = X_test_final[:sample_size].toarray()
+
+# =========================================================
+# SHAP EXPLAINER
+# =========================================================
+
+explainer = shap.TreeExplainer(model_full)
+
+# =========================================================
+# SHAP VALUES
+# =========================================================
+
+shap_values = explainer.shap_values(X_shap_sample)
+
+# RandomForest binario -> clase FAKE
+if isinstance(shap_values, list):
+
+    shap_values_plot = shap_values[1]
+
+else:
+
+    shap_values_plot = shap_values
+
+# =========================================================
+# SHAP SUMMARY PLOT
+# =========================================================
+
+plt.figure()
+
+shap.summary_plot(
+    shap_values_plot,
+    X_shap_sample,
+    feature_names=all_feature_names,
+    max_display=30,
+    show=False
+)
+
+plt.tight_layout()
+
+plt.savefig(
+    "xai/random_forest/shap_summary_plot.png",
+    bbox_inches='tight'
+)
+
+plt.close()
+
+print("[OK] shap_summary_plot.png")
+
+# =========================================================
+# SHAP BAR PLOT
+# =========================================================
+
+plt.figure()
+
+shap.summary_plot(
+    shap_values_plot,
+    X_shap_sample,
+    feature_names=all_feature_names,
+    plot_type="bar",
+    max_display=30,
+    show=False
+)
+
+plt.tight_layout()
+
+plt.savefig(
+    "xai/random_forest/shap_bar_plot.png",
+    bbox_inches='tight'
+)
+
+plt.close()
+
+print("[OK] shap_bar_plot.png")
+
+# =========================================================
+# SAMPLE MÁS CONFIADO
+# =========================================================
+
+confidence_scores = np.abs(
+    y_probs_full[:sample_size] - 0.5
+)
+
+sample_index = np.argmax(confidence_scores)
+
+# =========================================================
+# SHAP WATERFALL
+# =========================================================
+
+sample_dense = X_shap_sample[sample_index]
+
+# coger SOLO clase FAKE
+sample_shap_values = shap_values_plot[
+    sample_index, :, 1
+]
+
+explanation = shap.Explanation(
+    values=sample_shap_values,
+    base_values=explainer.expected_value[1],
+    data=sample_dense,
+    feature_names=all_feature_names
+)
+
+plt.figure()
+
+shap.plots.waterfall(
+    explanation,
+    show=False
+)
+
+plt.savefig(
+    "xai/random_forest/shap_waterfall_plot.png",
+    bbox_inches='tight'
+)
+
+plt.close()
+
+print("[OK] shap_waterfall_plot.png")
+
+# =========================================================
+# GUARDAR TEXTO SHAP
+# =========================================================
+
+with open(
+    "xai/random_forest/shap_explained_text.txt",
+    "w",
+    encoding="utf-8"
+) as f:
+
+    f.write("===== TEXTO ORIGINAL =====\n\n")
+    f.write(X_text_full_test.iloc[sample_index])
+
+    f.write("\n\n===== TEXTO PROCESADO =====\n\n")
+    f.write(X_text_test.iloc[sample_index])
+
+print("[OK] shap_explained_text.txt")
+
+# =========================================================
+# TOP FEATURES JSON
+# =========================================================
+
+mean_abs_shap = np.abs(
+    shap_values_plot[:, :, 1]
+).mean(axis=0)
+
+top_idx = np.argsort(mean_abs_shap)[::-1][:20]
+
+top_features = []
+
+for idx in top_idx:
+
+    top_features.append({
+        "feature": all_feature_names[idx],
+        "importance": float(mean_abs_shap[idx])
+    })
+
+with open(
+    "xai/random_forest/top_features_shap.json",
+    "w",
+    encoding="utf-8"
+) as f:
+
+    json.dump(
+        top_features,
+        f,
+        indent=4,
+        ensure_ascii=False
+    )
+
+print("[OK] top_features_shap.json")
+
+# =========================================================
+# LIME
+# =========================================================
+
+print("\n================================================")
+print("GENERANDO EXPLICACIONES LIME")
+print("================================================")
+
+# =========================================================
+# MAPPING FULL_TEXT -> TEXT_ML
+# =========================================================
+
+text_mapping_dict = dict(
+    zip(
+        X_text_full_test,
+        X_text_test
+    )
+)
+
+# =========================================================
+# FUNCIÓN PREDICT PROBA PARA LIME
+# =========================================================
+
+def predict_proba_lime(texts):
+
+    processed_texts = []
+
+    for text in texts:
+
+        if text in text_mapping_dict:
+
+            processed_texts.append(
+                text_mapping_dict[text]
+            )
+
+        else:
+
+            processed_texts.append(text)
+
+    # TF-IDF
+    tfidf = vectorizer.transform(processed_texts)
+
+    # numéricas vacías
+    numeric_zeros = np.zeros(
+        (len(processed_texts), len(numeric_features))
+    )
+
+    # combinar
+    final = hstack([tfidf, numeric_zeros])
+
+    final = final.tocsr()
+
+    # probabilidades
+    probs = model_full.predict_proba(final)
+
+    return probs
+
+# =========================================================
+# LIME EXPLAINER
+# =========================================================
+
+lime_explainer = LimeTextExplainer(
+    class_names=["REAL", "FAKE"]
+)
+
+# =========================================================
+# TEXTO ORIGINAL
+# =========================================================
+
+sample_text = X_text_full_test.iloc[sample_index]
+
+# =========================================================
+# GENERAR EXPLICACIÓN
+# =========================================================
+
+lime_exp = lime_explainer.explain_instance(
+    sample_text,
+    predict_proba_lime,
+    num_features=15
+)
+
+# =========================================================
+# GUARDAR HTML
+# =========================================================
+
+lime_exp.save_to_file(
+    "xai/random_forest/lime_explanation.html"
+)
+
+print("[OK] lime_explanation.html")
+
+# =========================================================
+# GUARDAR FEATURES JSON
+# =========================================================
+
+lime_data = {
+    "original_text": X_text_full_test.iloc[sample_index],
+    "processed_text": X_text_test.iloc[sample_index],
+    "features": []
+}
+
+for feature, weight in lime_exp.as_list():
+
+    lime_data["features"].append({
+        "feature": feature,
+        "weight": float(weight)
+    })
+
+with open(
+    "xai/random_forest/lime_features.json",
+    "w",
+    encoding="utf-8"
+) as f:
+
+    json.dump(
+        lime_data,
+        f,
+        indent=4,
+        ensure_ascii=False
+    )
+
+print("[OK] lime_features.json")
+
+# =========================================================
+# RESUMEN FINAL
+# =========================================================
+
+print("\n================================================")
+print("XAI COMPLETADO")
+print("================================================")
+
+print("\nArchivos generados:")
+
+print("\nSHAP:")
+print("- shap_summary_plot.png")
+print("- shap_bar_plot.png")
+print("- shap_waterfall_plot.png")
+print("- shap_explained_text.txt")
+print("- top_features_shap.json")
+
+print("\nLIME:")
+print("- lime_explanation.html")
+print("- lime_features.json")

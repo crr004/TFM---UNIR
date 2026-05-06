@@ -1,0 +1,62 @@
+[
+    {
+        "feature": "EQUO",
+        "weight": -0.09839247540679692
+    },
+    {
+        "feature": "per",
+        "weight": -0.05975615373417828
+    },
+    {
+        "feature": "Narbona",
+        "weight": -0.04478558005832217
+    },
+    {
+        "feature": "vers",
+        "weight": -0.033026620793768925
+    },
+    {
+        "feature": "Iniciativa",
+        "weight": 0.029839767714379104
+    },
+    {
+        "feature": "Cristina",
+        "weight": -0.027884942706787454
+    },
+    {
+        "feature": "con",
+        "weight": 0.005511911603940169
+    },
+    {
+        "feature": "en",
+        "weight": 0.005115262642734495
+    },
+    {
+        "feature": "junto",
+        "weight": 0.005063283378660255
+    },
+    {
+        "feature": "a",
+        "weight": -0.004066140337701075
+    },
+    {
+        "feature": "El",
+        "weight": 0.004005550557303379
+    },
+    {
+        "feature": "le",
+        "weight": -0.0038522876205506
+    },
+    {
+        "feature": "Coalición",
+        "weight": -0.003288316619931121
+    },
+    {
+        "feature": "o",
+        "weight": 0.002672633470165769
+    },
+    {
+        "feature": "Canaria",
+        "weight": -0.0023723529424046932
+    }
+]

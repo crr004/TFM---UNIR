@@ -1,0 +1,82 @@
+[
+    {
+        "feature": "bng",
+        "importance": 0.14013844590340585
+    },
+    {
+        "feature": "sánchez",
+        "importance": 0.09525348540951038
+    },
+    {
+        "feature": "equo",
+        "importance": 0.07812132455222287
+    },
+    {
+        "feature": "eaj",
+        "importance": 0.05848606312262275
+    },
+    {
+        "feature": "eaj pnv",
+        "importance": 0.05848606312262275
+    },
+    {
+        "feature": "canarias",
+        "importance": 0.05372206025802052
+    },
+    {
+        "feature": "num_chars",
+        "importance": 0.05220796514121926
+    },
+    {
+        "feature": "erc",
+        "importance": 0.051641196628800234
+    },
+    {
+        "feature": "narbona",
+        "importance": 0.045434557387331514
+    },
+    {
+        "feature": "psoe",
+        "importance": 0.040793302632588714
+    },
+    {
+        "feature": "coalición canario",
+        "importance": 0.030559887191951275
+    },
+    {
+        "feature": "cristina",
+        "importance": 0.028902901274811148
+    },
+    {
+        "feature": "per catalunya",
+        "importance": 0.02770508137715628
+    },
+    {
+        "feature": "vers",
+        "importance": 0.02752700586803261
+    },
+    {
+        "feature": "vers per",
+        "importance": 0.02752700586803261
+    },
+    {
+        "feature": "cristina narbona",
+        "importance": 0.02742420138098583
+    },
+    {
+        "feature": "iniciativo",
+        "importance": 0.027337186792234375
+    },
+    {
+        "feature": "iniciativo vers",
+        "importance": 0.02721489328476794
+    },
+    {
+        "feature": "pnc",
+        "importance": 0.0269302529656248
+    },
+    {
+        "feature": "casado",
+        "importance": 0.02569048090611771
+    }
+]

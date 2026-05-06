@@ -1,0 +1,66 @@
+{
+    "original_text": "El EQUO gana en el Senado con 94 asientos pero pierde su mayoría absoluta Con más del 90% de los votos escrutados, el EQUO obtendría en la Cámara Alta 94 senadores, por delante del Iniciativa vers per Catalunya, que obtendría 81. Coalición Canaria obtiene dos senadores y Unidas Iniciativa vers per Catalunya y EQUO no consiguen representación en las urnas.",
+    "processed_text": "equo ganar senado numero asiento perder mayoría absoluto numero voto escrutado equo obtener cámara alto numero senador iniciativo vers per catalunya obtener numero coalición canario obtener numero senador unidas iniciativo vers per catalunya equo no representación urna",
+    "features": [
+        {
+            "feature": "per",
+            "weight": -0.14037186530929358
+        },
+        {
+            "feature": "EQUO",
+            "weight": -0.12758285769354621
+        },
+        {
+            "feature": "vers",
+            "weight": -0.10318333723848282
+        },
+        {
+            "feature": "Catalunya",
+            "weight": -0.08720365267554732
+        },
+        {
+            "feature": "no",
+            "weight": -0.02240765398014058
+        },
+        {
+            "feature": "Coalición",
+            "weight": -0.018946360846979485
+        },
+        {
+            "feature": "Iniciativa",
+            "weight": -0.003894637701310781
+        },
+        {
+            "feature": "consiguen",
+            "weight": -0.001875396266552399
+        },
+        {
+            "feature": "de",
+            "weight": 0.0016879545158759008
+        },
+        {
+            "feature": "que",
+            "weight": 0.0016579344102576267
+        },
+        {
+            "feature": "81",
+            "weight": 0.0014908808655427173
+        },
+        {
+            "feature": "las",
+            "weight": -0.0013562826086197797
+        },
+        {
+            "feature": "delante",
+            "weight": 0.0011565820049715967
+        },
+        {
+            "feature": "urnas",
+            "weight": -0.0011227891367993894
+        },
+        {
+            "feature": "más",
+            "weight": 0.0009755382406223988
+        }
+    ]
+}
