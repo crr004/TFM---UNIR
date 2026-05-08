@@ -2,7 +2,9 @@ import pandas as pd
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+import seaborn as sns
 import json
+import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import learning_curve
@@ -21,6 +23,7 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
     roc_auc_score,
+    roc_curve,
     classification_report,
     confusion_matrix
 )
@@ -393,8 +396,10 @@ test_mean = test_scores.mean(axis=1)
 # GRÁFICA
 # =========================================================
 
+os.makedirs("graficas/logistic_regression", exist_ok=True)
+
 # -------------------------
-# 26. Plot
+# 26. Plot Learning Curve F1
 # -------------------------
 plt.figure(figsize=(8, 6))
 
@@ -412,10 +417,16 @@ plt.plot(
 
 plt.xlabel("Tamaño del conjunto de entrenamiento")
 plt.ylabel("F1-score")
-plt.title("Learning Curve - Regresión Logística")
+plt.title("Learning Curve - F1 - Regresión Logística")
 plt.legend()
 plt.grid()
-plt.show()
+plt.tight_layout()
+plt.savefig(
+    "graficas/logistic_regression/learning_curve_f1.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] learning_curve_f1.png")
 
 # =========================================================
 # 27. GUARDAR RESULTADOS EN JSON
@@ -465,7 +476,145 @@ print("\nResultados guardados en:")
 print("logistic_regression_results.json")
 
 # =========================================================
-# 28. EXPLICABILIDAD (SHAP + LIME)
+# 28. GRÁFICAS DE EVALUACIÓN
+# =========================================================
+
+print("\n================================================")
+print("GENERANDO GRÁFICAS DE EVALUACIÓN")
+print("================================================")
+
+# -------------------------
+# 28a. Learning Curve - Precisión
+# -------------------------
+train_sizes_p, train_scores_p, test_scores_p = learning_curve(
+
+    pipeline,
+
+    X_text_train,
+    y_train,
+
+    cv=5,
+
+    scoring='precision',
+    n_jobs=-1,
+    train_sizes=np.linspace(0.1, 1.0, 5)
+)
+
+train_mean_p = train_scores_p.mean(axis=1)
+test_mean_p = test_scores_p.mean(axis=1)
+
+plt.figure(figsize=(8, 6))
+
+plt.plot(train_sizes_p, train_mean_p, label="Train Precision")
+plt.plot(train_sizes_p, test_mean_p, label="Validation Precision")
+
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("Precision")
+plt.title("Learning Curve - Precisión - Regresión Logística")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/logistic_regression/learning_curve_precision.png",
+    bbox_inches='tight'
+)
+plt.close()
+
+print("[OK] learning_curve_precision.png")
+
+# -------------------------
+# 28b. Learning Curve - Loss
+# -------------------------
+train_sizes_l, train_scores_l, test_scores_l = learning_curve(
+
+    pipeline,
+
+    X_text_train,
+    y_train,
+
+    cv=5,
+
+    scoring='neg_log_loss',
+    n_jobs=-1,
+    train_sizes=np.linspace(0.1, 1.0, 5)
+)
+
+train_mean_l = -train_scores_l.mean(axis=1)
+test_mean_l = -test_scores_l.mean(axis=1)
+
+plt.figure(figsize=(8, 6))
+
+plt.plot(train_sizes_l, train_mean_l, label="Train Loss")
+plt.plot(train_sizes_l, test_mean_l, label="Validation Loss")
+
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("Log Loss")
+plt.title("Learning Curve - Loss - Regresión Logística")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/logistic_regression/learning_curve_loss.png",
+    bbox_inches='tight'
+)
+plt.close()
+
+print("[OK] learning_curve_loss.png")
+
+# -------------------------
+# 28c. Matriz de Confusión
+# -------------------------
+plt.figure(figsize=(7, 5))
+
+sns.heatmap(
+    conf_matrix,
+    annot=True,
+    fmt='d',
+    cmap='Blues',
+    xticklabels=['REAL', 'FAKE'],
+    yticklabels=['REAL', 'FAKE']
+)
+
+plt.xlabel("Predicción")
+plt.ylabel("Real")
+plt.title("Matriz de Confusión - Regresión Logística")
+plt.tight_layout()
+plt.savefig(
+    "graficas/logistic_regression/confusion_matrix.png",
+    bbox_inches='tight'
+)
+plt.close()
+
+print("[OK] confusion_matrix.png")
+
+# -------------------------
+# 28d. Curva ROC-AUC
+# -------------------------
+fpr, tpr, _ = roc_curve(y_test, y_test_probs)
+
+plt.figure(figsize=(8, 6))
+
+plt.plot(fpr, tpr, label=f"ROC-AUC = {roc_auc:.4f}")
+plt.plot([0, 1], [0, 1], 'k--', label="Clasificador aleatorio")
+
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title("Curva ROC-AUC - Regresión Logística")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/logistic_regression/roc_auc_curve.png",
+    bbox_inches='tight'
+)
+plt.close()
+
+print("[OK] roc_auc_curve.png")
+
+print("\nGráficas guardadas en: graficas/logistic_regression/")
+
+# =========================================================
+# 29. EXPLICABILIDAD (SHAP + LIME)
 # =========================================================
 
 # INSTALAR:
@@ -474,10 +623,6 @@ print("logistic_regression_results.json")
 import shap
 
 from lime.lime_text import LimeTextExplainer
-
-from scipy.special import expit
-
-import os
 
 # =========================================================
 # CREAR CARPETA

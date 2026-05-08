@@ -4,63 +4,63 @@
     "features": [
         {
             "feature": "Jordi",
-            "weight": -0.19482386809101437
+            "weight": -0.1966884200398279
         },
         {
             "feature": "Pedro",
-            "weight": -0.1333500218689607
+            "weight": -0.13295213502102593
         },
         {
             "feature": "Morenés",
-            "weight": 0.12415542057714413
+            "weight": 0.12483206881283548
         },
         {
             "feature": "María",
-            "weight": -0.09394052102601767
+            "weight": -0.09015600824220445
         },
         {
             "feature": "él",
-            "weight": 0.056317473576317
+            "weight": 0.05620279411756577
         },
         {
             "feature": "Defensa",
-            "weight": -0.05054460366005764
+            "weight": -0.05177251394814581
         },
         {
             "feature": "exministro",
-            "weight": 0.030366373549645772
+            "weight": 0.02814853822294805
         },
         {
             "feature": "presidente",
-            "weight": -0.027430612359944345
+            "weight": -0.027445030768010477
         },
         {
             "feature": "favorecer",
-            "weight": -0.024911846085986
+            "weight": -0.02453547795383487
         },
         {
             "feature": "acusa",
-            "weight": 0.022027912772643897
+            "weight": 0.02405961737879508
         },
         {
             "feature": "contratado",
-            "weight": 0.021112860293421153
+            "weight": 0.021077844230346966
         },
         {
             "feature": "euros",
-            "weight": 0.020763458849885796
-        },
-        {
-            "feature": "Cosidó",
-            "weight": -0.020673440477596335
+            "weight": 0.02002048999214986
         },
         {
             "feature": "contrato",
-            "weight": -0.019650303021174657
+            "weight": -0.01617157003339054
+        },
+        {
+            "feature": "Cosidó",
+            "weight": -0.01525418153921683
         },
         {
             "feature": "Dolores",
-            "weight": 0.013401305766987231
+            "weight": 0.014412215574068446
         }
     ]
 }

@@ -4,63 +4,63 @@
     "features": [
         {
             "feature": "ERC",
-            "weight": 0.4184223234716543
+            "weight": 0.41364537295979203
         },
         {
             "feature": "Bildu",
-            "weight": 0.30108245858005206
+            "weight": 0.2975073982763491
         },
         {
             "feature": "BNG",
-            "weight": -0.2673070010103773
+            "weight": -0.27214950479897726
         },
         {
             "feature": "Pedro",
-            "weight": -0.16785286004809805
+            "weight": -0.17148483774761722
         },
         {
             "feature": "Compromís",
-            "weight": 0.14401378635322581
+            "weight": 0.1518689909795698
         },
         {
             "feature": "Sánchez",
-            "weight": -0.05689117923583375
-        },
-        {
-            "feature": "sobre",
-            "weight": 0.024012548769180565
+            "weight": -0.051939676626693264
         },
         {
             "feature": "País",
-            "weight": 0.023481731526207025
+            "weight": 0.026437681013450922
         },
         {
             "feature": "EH",
-            "weight": 0.021370665216360586
+            "weight": 0.021101136173062814
         },
         {
-            "feature": "JxCat",
-            "weight": 0.013287350321545053
-        },
-        {
-            "feature": "CUP",
-            "weight": 0.012690529558418116
+            "feature": "sobre",
+            "weight": 0.019665017876896007
         },
         {
             "feature": "comparecer",
-            "weight": 0.011376504182018344
+            "weight": 0.017725991968321
         },
         {
-            "feature": "por",
-            "weight": -0.01022856212524176
+            "feature": "presentado",
+            "weight": 0.011717254216997923
         },
         {
-            "feature": "los",
-            "weight": -0.008773127907778497
+            "feature": "jefe",
+            "weight": 0.010978036606294225
         },
         {
-            "feature": "Ejecutivo",
-            "weight": 0.007466787642032369
+            "feature": "solicitud",
+            "weight": 0.009886313251518024
+        },
+        {
+            "feature": "dé",
+            "weight": -0.009883042779949761
+        },
+        {
+            "feature": "una",
+            "weight": -0.0076960273942269335
         }
     ]
 }

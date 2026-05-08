@@ -1,6 +1,6 @@
 {
     "model": "LinearSVC",
-    "training_time_seconds": 0.5081,
+    "training_time_seconds": 0.528,
     "metrics": {
         "accuracy": 0.885,
         "precision": 0.8719,

@@ -1,62 +1,62 @@
 [
     {
         "feature": "EQUO",
-        "weight": -0.09839247540679692
+        "weight": -0.09679245869553538
     },
     {
         "feature": "per",
-        "weight": -0.05975615373417828
+        "weight": -0.05801635242103305
     },
     {
         "feature": "Narbona",
-        "weight": -0.04478558005832217
+        "weight": -0.041566509290155186
     },
     {
         "feature": "vers",
-        "weight": -0.033026620793768925
+        "weight": -0.03427865514407945
     },
     {
         "feature": "Iniciativa",
-        "weight": 0.029839767714379104
+        "weight": 0.02587839591230666
     },
     {
         "feature": "Cristina",
-        "weight": -0.027884942706787454
-    },
-    {
-        "feature": "con",
-        "weight": 0.005511911603940169
-    },
-    {
-        "feature": "en",
-        "weight": 0.005115262642734495
-    },
-    {
-        "feature": "junto",
-        "weight": 0.005063283378660255
-    },
-    {
-        "feature": "a",
-        "weight": -0.004066140337701075
-    },
-    {
-        "feature": "El",
-        "weight": 0.004005550557303379
-    },
-    {
-        "feature": "le",
-        "weight": -0.0038522876205506
-    },
-    {
-        "feature": "Coalición",
-        "weight": -0.003288316619931121
-    },
-    {
-        "feature": "o",
-        "weight": 0.002672633470165769
+        "weight": -0.025517615797412154
     },
     {
         "feature": "Canaria",
-        "weight": -0.0023723529424046932
+        "weight": -0.012473290215027105
+    },
+    {
+        "feature": "junto",
+        "weight": 0.007766872182347504
+    },
+    {
+        "feature": "holgura",
+        "weight": 0.007557271218730154
+    },
+    {
+        "feature": "Coalición",
+        "weight": -0.006897823131652232
+    },
+    {
+        "feature": "ultraderecha",
+        "weight": 0.00677655358248682
+    },
+    {
+        "feature": "Congreso",
+        "weight": 0.004794006256917692
+    },
+    {
+        "feature": "Unidas",
+        "weight": 0.004028449050714833
+    },
+    {
+        "feature": "gana",
+        "weight": -0.003996939523745798
+    },
+    {
+        "feature": "con",
+        "weight": -0.0036978697232021005
     }
 ]

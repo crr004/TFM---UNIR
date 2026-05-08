@@ -2,10 +2,15 @@ import pandas as pd
 import numpy as np
 import time
 import json
+import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, learning_curve
 
 from sklearn.feature_extraction.text import TfidfVectorizer
+
+from sklearn.pipeline import Pipeline
 
 from sklearn.metrics import (
     accuracy_score,
@@ -13,6 +18,7 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
     roc_auc_score,
+    roc_curve,
     classification_report,
     confusion_matrix
 )
@@ -405,15 +411,217 @@ print("\nResultados guardados en:")
 print("xgboost_results.json")
 
 # =========================================================
-# 24. EXPLICABILIDAD (SHAP + LIME)
+# 24. GRÁFICAS DE EVALUACIÓN
+# =========================================================
+
+print("\n================================================")
+print("GENERANDO GRÁFICAS DE EVALUACIÓN")
+print("================================================")
+
+os.makedirs("graficas/xgboost", exist_ok=True)
+
+# -------------------------
+# Pipeline para learning curves (texto)
+# -------------------------
+pipeline_lc = Pipeline([
+
+    ("tfidf", TfidfVectorizer(
+        max_features=15000,
+        ngram_range=(1, 2),
+        min_df=5,
+        max_df=0.85
+    )),
+
+    ("clf", XGBClassifier(
+        n_estimators=300,
+        max_depth=6,
+        learning_rate=0.1,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        eval_metric="logloss",
+        n_jobs=-1,
+        random_state=42
+    ))
+
+])
+
+# -------------------------
+# 24a. Learning Curve - F1
+# -------------------------
+train_sizes, train_scores, test_scores = learning_curve(
+
+    pipeline_lc,
+
+    X_text_train,
+    y_train,
+
+    cv=5,
+
+    scoring='f1',
+    n_jobs=-1,
+    train_sizes=np.linspace(0.1, 1.0, 5)
+)
+
+train_mean = train_scores.mean(axis=1)
+test_mean = test_scores.mean(axis=1)
+
+plt.figure(figsize=(8, 6))
+
+plt.plot(train_sizes, train_mean, label="Train F1")
+plt.plot(train_sizes, test_mean, label="Validation F1")
+
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("F1-score")
+plt.title("Learning Curve - F1 - XGBoost")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/xgboost/learning_curve_f1.png",
+    bbox_inches='tight'
+)
+plt.close()
+
+print("[OK] learning_curve_f1.png")
+
+# -------------------------
+# 24b. Learning Curve - Precisión
+# -------------------------
+train_sizes_p, train_scores_p, test_scores_p = learning_curve(
+
+    pipeline_lc,
+
+    X_text_train,
+    y_train,
+
+    cv=5,
+
+    scoring='precision',
+    n_jobs=-1,
+    train_sizes=np.linspace(0.1, 1.0, 5)
+)
+
+train_mean_p = train_scores_p.mean(axis=1)
+test_mean_p = test_scores_p.mean(axis=1)
+
+plt.figure(figsize=(8, 6))
+
+plt.plot(train_sizes_p, train_mean_p, label="Train Precision")
+plt.plot(train_sizes_p, test_mean_p, label="Validation Precision")
+
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("Precision")
+plt.title("Learning Curve - Precisión - XGBoost")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/xgboost/learning_curve_precision.png",
+    bbox_inches='tight'
+)
+plt.close()
+
+print("[OK] learning_curve_precision.png")
+
+# -------------------------
+# 24c. Learning Curve - Loss
+# -------------------------
+train_sizes_l, train_scores_l, test_scores_l = learning_curve(
+
+    pipeline_lc,
+
+    X_text_train,
+    y_train,
+
+    cv=5,
+
+    scoring='neg_log_loss',
+    n_jobs=-1,
+    train_sizes=np.linspace(0.1, 1.0, 5)
+)
+
+train_mean_l = -train_scores_l.mean(axis=1)
+test_mean_l = -test_scores_l.mean(axis=1)
+
+plt.figure(figsize=(8, 6))
+
+plt.plot(train_sizes_l, train_mean_l, label="Train Loss")
+plt.plot(train_sizes_l, test_mean_l, label="Validation Loss")
+
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("Log Loss")
+plt.title("Learning Curve - Loss - XGBoost")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/xgboost/learning_curve_loss.png",
+    bbox_inches='tight'
+)
+plt.close()
+
+print("[OK] learning_curve_loss.png")
+
+# -------------------------
+# 24d. Matriz de Confusión
+# -------------------------
+plt.figure(figsize=(7, 5))
+
+sns.heatmap(
+    conf_matrix,
+    annot=True,
+    fmt='d',
+    cmap='Blues',
+    xticklabels=['REAL', 'FAKE'],
+    yticklabels=['REAL', 'FAKE']
+)
+
+plt.xlabel("Predicción")
+plt.ylabel("Real")
+plt.title("Matriz de Confusión - XGBoost")
+plt.tight_layout()
+plt.savefig(
+    "graficas/xgboost/confusion_matrix.png",
+    bbox_inches='tight'
+)
+plt.close()
+
+print("[OK] confusion_matrix.png")
+
+# -------------------------
+# 24e. Curva ROC-AUC
+# -------------------------
+fpr, tpr, _ = roc_curve(y_test, y_probs)
+
+plt.figure(figsize=(8, 6))
+
+plt.plot(fpr, tpr, label=f"ROC-AUC = {roc_auc:.4f}")
+plt.plot([0, 1], [0, 1], 'k--', label="Clasificador aleatorio")
+
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title("Curva ROC-AUC - XGBoost")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/xgboost/roc_auc_curve.png",
+    bbox_inches='tight'
+)
+plt.close()
+
+print("[OK] roc_auc_curve.png")
+
+print("\nGráficas guardadas en: graficas/xgboost/")
+
+# =========================================================
+# 25. EXPLICABILIDAD (SHAP + LIME)
 # =========================================================
 
 # INSTALAR:
 # pip install shap lime
 
 import shap
-import matplotlib.pyplot as plt
-import os
 
 from lime.lime_text import LimeTextExplainer
 

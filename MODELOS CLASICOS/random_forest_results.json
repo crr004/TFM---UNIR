@@ -1,6 +1,6 @@
 {
     "random_forest_tfidf": {
-        "training_time_seconds": 0.6543,
+        "training_time_seconds": 0.6831,
         "metrics": {
             "accuracy": 0.7927,
             "precision": 0.7323,
@@ -24,7 +24,7 @@
         "classification_report": "              precision    recall  f1-score   support\n\n           0       0.99      0.53      0.69      5435\n           1       0.73      1.00      0.84      7038\n\n    accuracy                           0.79     12473\n   macro avg       0.86      0.76      0.77     12473\nweighted avg       0.85      0.79      0.78     12473\n"
     },
     "random_forest_tfidf_features": {
-        "training_time_seconds": 1.2505,
+        "training_time_seconds": 1.2573,
         "metrics": {
             "accuracy": 0.8141,
             "precision": 0.7558,

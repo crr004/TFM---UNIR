@@ -4,63 +4,63 @@
     "features": [
         {
             "feature": "per",
-            "weight": -0.14037186530929358
+            "weight": -0.1420079543060117
         },
         {
             "feature": "EQUO",
-            "weight": -0.12758285769354621
+            "weight": -0.12587936334617572
         },
         {
             "feature": "vers",
-            "weight": -0.10318333723848282
+            "weight": -0.10442643235461267
         },
         {
             "feature": "Catalunya",
-            "weight": -0.08720365267554732
+            "weight": -0.0880250215507536
         },
         {
             "feature": "no",
-            "weight": -0.02240765398014058
+            "weight": -0.020129535134982165
         },
         {
             "feature": "Coalición",
-            "weight": -0.018946360846979485
+            "weight": -0.019329849129509052
         },
         {
             "feature": "Iniciativa",
-            "weight": -0.003894637701310781
+            "weight": -0.003865318696032717
         },
         {
-            "feature": "consiguen",
-            "weight": -0.001875396266552399
+            "feature": "Cámara",
+            "weight": -0.0020411262158202205
         },
         {
-            "feature": "de",
-            "weight": 0.0016879545158759008
+            "feature": "gana",
+            "weight": -0.001774746807453405
         },
         {
-            "feature": "que",
-            "weight": 0.0016579344102576267
-        },
-        {
-            "feature": "81",
-            "weight": 0.0014908808655427173
-        },
-        {
-            "feature": "las",
-            "weight": -0.0013562826086197797
-        },
-        {
-            "feature": "delante",
-            "weight": 0.0011565820049715967
-        },
-        {
-            "feature": "urnas",
-            "weight": -0.0011227891367993894
+            "feature": "votos",
+            "weight": -0.0017173902382501775
         },
         {
             "feature": "más",
-            "weight": 0.0009755382406223988
+            "weight": 0.0016652372039349373
+        },
+        {
+            "feature": "obtendría",
+            "weight": 0.001452686253866481
+        },
+        {
+            "feature": "consiguen",
+            "weight": -0.001225278465980228
+        },
+        {
+            "feature": "81",
+            "weight": 0.001186313108849439
+        },
+        {
+            "feature": "Alta",
+            "weight": 0.0010804441267543918
         }
     ]
 }
