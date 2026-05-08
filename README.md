@@ -17,28 +17,43 @@ A continuación se detalla la estructura completa del repositorio y la función 
  ┣ 📂 Data/                                 # 📥 INGESTA Y PREPARACIÓN DE DATOS
  ┃ ┣ 📂 Bin/                                # Datasets originales (crudos) para Fake News
  ┃ ┣ 📂 Topic/                              # Datasets originales (crudos) para Topics
- ┃ ┣ 📜 prepare_data_bin.py                 # Script: Unificación y limpieza (Binario)
+ ┃ ┣ 📜 prepare_data_bin.py                 # Script: Unificación inicial (Binario)
  ┃ ┣ 📜 prepare_data_topic.py               # Script: Unificación y limpieza (Topics)
- ┃ ┗ 📜 README.md                           # Documentación técnica de los orígenes de datos
+ ┃ ┣ 📜 preprocesado.py                     # Script: Limpieza profunda y NLP para modelos
+ ┃ ┣ 📜 dataset_preprocesado_binario.csv    # Dataset final tras el NLP (features ML, DL, BETO)
+ ┃ ┣ 📜 README_preprocesado.md              # Documentación técnica del pipeline de limpieza
+ ┃ ┗ 📜 README.md                           # Documentación de los orígenes de datos
  ┃
  ┣ 📂 EDA/                                  # 📊 ANÁLISIS EXPLORATORIO DE DATOS (EDA)
- ┃ ┣ 📓 Eda_Dataset_Binario.ipynb           # Análisis profundo de noticias falsas vs reales
- ┃ ┗ 📓 Eda_Dataset_Topic.ipynb             # Análisis lingüístico y distribución de tópicos
+ ┃ ┣ 📓 Eda_Dataset_Binario.ipynb           # Análisis de noticias falsas vs reales
+ ┃ ┗ 📓 Eda_Dataset_Topic.ipynb             # Análisis lingüístico y de temáticas
+ ┃
+ ┣ 📂 Modelo_CNN_Bin/                       # 🧠 MODELO DEEP LEARNING: CNN (FAKE NEWS)
+ ┃ ┣ 📂 artefactos/                         # Modelos y tokenizadores serializados
+ ┃ ┣ 📂 metricas/                           # Curvas de entrenamiento, matrices de confusión
+ ┃ ┣ 📂 xai/                                # Análisis de Explicabilidad (LIME)
+ ┃ ┗ 📓 Modelo_CNN_Bin.ipynb                # Desarrollo del modelo CNN
+ ┃
+ ┣ 📂 Modelo_LSTM_Bin/                      # 🧠 MODELO DEEP LEARNING: LSTM (FAKE NEWS)
+ ┃ ┣ 📂 artefactos/, metricas/, xai/
+ ┃ ┗ 📓 Modelo_LSTM.ipynb                   # Desarrollo del modelo LSTM
+ ┃
+ ┣ 📂 Modelo_BiLSTM_Bin/                    # 🧠 MODELO DEEP LEARNING: BiLSTM (FAKE NEWS)
+ ┃ ┣ 📂 artefactos/, metricas/, xai/
+ ┃ ┗ 📓 Modelo_BiLSTM.ipynb                 # Desarrollo del modelo BiLSTM
+ ┃
+ ┣ 📂 Modelo BiGRU_Bin/                     # 🧠 MODELO DEEP LEARNING: BiGRU (FAKE NEWS)
+ ┃ ┣ 📂 artefactos/, metricas/, xai/
+ ┃ ┗ 📓 Modelo_BiGRU.ipynb                  # Desarrollo del modelo BiGRU
  ┃
  ┣ 📂 Modelo_Clasificador_Topics/           # 🧠 MODELO DE PRODUCCIÓN (TOPICS)
  ┃ ┣ 📂 src/                                # Código fuente encapsulado y modularizado
- ┃ ┃ ┣ 📜 __init__.py                       # Inicializador del paquete
- ┃ ┃ ┣ 📜 main.py                           # Orquestador CLI
- ┃ ┃ ┣ 📜 preprocessing.py                  # Limpieza, spaCy NER, filtrado y TF-IDF
- ┃ ┃ ┣ 📜 train.py                          # Entrenamiento XGBoost (con soporte GPU)
- ┃ ┃ ┣ 📜 evaluate.py                       # Generación de métricas y reporte
- ┃ ┃ ┗ 📜 predict.py                        # Pipeline de inferencia end-to-end
- ┃ ┣ 📂 artefactos/                         # Modelos y codificadores serializados (.pkl)
- ┃ ┣ 📂 figuras/                            # Matrices de confusión y curvas de aprendizaje
+ ┃ ┃ ┣ 📜 main.py, train.py, predict.py...  # Orquestador CLI y pipelines
+ ┃ ┣ 📂 artefactos/, figuras/               # Modelos, codificadores y gráficos
  ┃ ┣ 📓 Modelo_XGBoost_Topic.ipynb          # Notebook original de desarrollo del modelo
- ┃ ┣ 📜 requirements.txt                    # Dependencias específicas de este módulo
  ┃ ┗ 📜 README.md                           # Guía detallada de uso y ejecución del modelo
  ┃
+ ┣ 📜 requirements.txt                      # Dependencias globales del proyecto
  ┣ 📜 .gitignore                            # Archivos y carpetas ignorados por Git
  ┗ 📜 README.md                             # Este archivo (Guía General)
 ```
@@ -47,29 +62,43 @@ A continuación se detalla la estructura completa del repositorio y la función 
 
 ## 🧩 Descripción de los Módulos Principales
 
-### 1. Preparación de Datos (`/Data`)
-Esta carpeta contiene la materia prima del proyecto. Los scripts de Python se encargan de automatizar la extracción desde múltiples fuentes (CSVs, Parquets, Excel), normalizar los nombres de columnas, limpiar textos vacíos, y unificar todo en dos datasets maestros listos para el modelado:
-- **`prepare_data_bin.py`**: Genera el dataset consolidado. Agrupa 4 fuentes distintas y estandariza la variable objetivo: `True` (Noticia Real) o `False` (Fake News).
-- **`prepare_data_topic.py`**: Genera el dataset consolidado de temáticas extraído de fuentes de noticias generalistas.
+### 1. Preparación de Datos Avanzada (`/Data`)
+El pipeline de datos cuenta con extracciones desde múltiples fuentes, pero recientemente se ha añadido un procesamiento de PLN avanzado:
+- **`prepare_data_bin.py` / `prepare_data_topic.py`**: Unifican y estandarizan datos en bruto.
+- **`preprocesado.py`**: Limpieza profunda del texto (normalización, tokenización, lematización con spaCy) generando variables de texto específicas:
+  - `text_ml`: Lematizado y limpio de stopwords para modelos de ML tradicionales (TF-IDF).
+  - `text_dl`: Conserva el orden secuencial y más contexto para Deep Learning.
+  - `text_beto`: Limpieza mínima, ideal para modelos Transformers (BETO).
+- También extrae múltiples características numéricas estructurales (número de urls, signos de puntuación, mayúsculas) y elimina conflictos o duplicados. Genera el output `dataset_preprocesado_binario.csv`.
 
 ### 2. Análisis Exploratorio (`/EDA`)
-Antes de construir los modelos, se realiza un exhaustivo análisis lingüístico utilizando bibliotecas de vanguardia como **spaCy**.
-- **`Eda_Dataset_Binario.ipynb`**: Estudia las diferencias estructurales entre noticias reales y falsas (longitud de textos, uso de mayúsculas, signos de puntuación, N-gramas y palabras más distintivas).
-- **`Eda_Dataset_Topic.ipynb`**: Analiza el desbalanceo de clases y justifica las decisiones de agrupamiento necesarias para mejorar la calidad y rendimiento del futuro modelo predictivo.
+Análisis exhaustivo antes de entrenar utilizando visualizaciones avanzadas.
+- **`Eda_Dataset_Binario.ipynb`**: Compara la estructura y semántica entre noticias Fake/True.
+- **`Eda_Dataset_Topic.ipynb`**: Balanceo de clases y agrupación por temáticas.
 
-### 3. Modelo Clasificador de Tópicos (`/Modelo_Clasificador_Topics`)
-Representa el **producto final** del pipeline de categorización. Ha sido reescrito y encapsulado siguiendo los mejores estándares de la industria del software:
-- Utiliza **XGBoost** alimentado por matrices **TF-IDF**.
-- Integra un preprocesamiento lingüístico avanzado que incluye Lematización y **Reemplazo de Entidades Nombradas (NER)**.
-- Dispone de una Interfaz de Línea de Comandos (CLI) que permite ejecutar los ciclos del proyecto de forma independiente (`preprocess`, `train`, `evaluate`, `predict`).
-- > 💡 *Dirígete al `README.md` de esa carpeta para ver las instrucciones de uso paso a paso.*
+### 3. Modelos Deep Learning (Fake News)
+Para el problema binario, se han implementado múltiples arquitecturas de Deep Learning. Cada carpeta contiene el Notebook de desarrollo, así como sus modelos guardados (`artefactos`), informes de resultados (`metricas`) y análisis de interpretabilidad o XAI (`xai`) usando técnicas como LIME:
+- **`Modelo_CNN_Bin`**: Redes Neuronales Convolucionales adaptadas para NLP, buscando patrones locales en el texto.
+- **`Modelo_LSTM_Bin`**: Memoria a Corto y Largo Plazo, ideal para detectar relaciones secuenciales en la redacción de la noticia.
+- **`Modelo_BiLSTM_Bin`**: Versión bidireccional de LSTM para capturar contexto tanto a futuro como a pasado.
+- **`Modelo BiGRU_Bin`**: GRU bidireccional, una arquitectura de compuertas eficiente con alto rendimiento en análisis de secuencias complejas.
+
+### 4. Modelo Clasificador de Tópicos (`/Modelo_Clasificador_Topics`)
+Representa el producto final del pipeline de categorización. Desarrollado con **XGBoost** alimentado por matrices **TF-IDF**, integrando un preprocesamiento lingüístico avanzado que incluye Lematización y **Reemplazo de Entidades Nombradas (NER)**. Dispone de una CLI para realizar todo el ciclo de vida del dato de manera modular.
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
 - **Lenguaje Base**: Python 3.10+
-- **Procesamiento de Lenguaje Natural (NLP)**: `spaCy` (modelo `es_core_news_lg`), `langdetect`
-- **Machine Learning**: `scikit-learn`, `XGBoost`
+- **Procesamiento de Lenguaje Natural (NLP)**: `spaCy` (modelo `es_core_news_sm`), `langdetect`, `wordcloud`
+- **Machine Learning & Deep Learning**: `scikit-learn`, `XGBoost`, `tensorflow`, `keras`
 - **Manipulación de Datos**: `pandas`, `numpy`
+- **Explicabilidad (XAI)**: `lime`
 - **Visualización Analítica**: `matplotlib`, `seaborn`
+- **Utilidades**: `tqdm`, `jupyter`
+
+Para instalar las dependencias necesarias de manera global, ejecuta:
+```bash
+pip install -r requirements.txt
+```
