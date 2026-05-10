@@ -11,3 +11,7 @@ wordcloud
 tqdm
 lime
 jupyter
+joblib
+langdetect
+shap
+google-generativeai
