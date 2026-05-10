@@ -1,50 +1,72 @@
 {
     "random_forest_tfidf": {
-        "training_time_seconds": 0.6831,
+        "training_time_seconds": 0.6866,
         "metrics": {
-            "accuracy": 0.7927,
-            "precision": 0.7323,
-            "recall": 0.997,
-            "f1_score": 0.8444,
-            "macro_f1_score": 0.7669,
-            "weighted_f1_score": 0.7769,
-            "roc_auc": 0.9351
+            "accuracy": 0.7994,
+            "precision": 0.7389,
+            "recall": 0.9967,
+            "f1_score": 0.8486,
+            "macro_f1_score": 0.7756,
+            "weighted_f1_score": 0.785,
+            "roc_auc": 0.9361
         },
-        "train_f1": 0.8497,
+        "train_metrics": {
+            "accuracy": 0.8005,
+            "precision": 0.7389,
+            "recall": 0.9996,
+            "f1_score": 0.8497
+        },
+        "val_metrics": {
+            "accuracy": 0.7901,
+            "precision": 0.73,
+            "recall": 0.9966,
+            "f1_score": 0.8427
+        },
         "confusion_matrix": [
             [
-                2870,
-                2565
+                2956,
+                2479
             ],
             [
-                21,
-                7017
+                23,
+                7014
             ]
         ],
-        "classification_report": "              precision    recall  f1-score   support\n\n           0       0.99      0.53      0.69      5435\n           1       0.73      1.00      0.84      7038\n\n    accuracy                           0.79     12473\n   macro avg       0.86      0.76      0.77     12473\nweighted avg       0.85      0.79      0.78     12473\n"
+        "classification_report": "              precision    recall  f1-score   support\n\n           0       0.99      0.54      0.70      5435\n           1       0.74      1.00      0.85      7037\n\n    accuracy                           0.80     12472\n   macro avg       0.87      0.77      0.78     12472\nweighted avg       0.85      0.80      0.79     12472\n"
     },
     "random_forest_tfidf_features": {
-        "training_time_seconds": 1.2573,
+        "training_time_seconds": 1.2704,
         "metrics": {
-            "accuracy": 0.8141,
-            "precision": 0.7558,
-            "recall": 0.9906,
-            "f1_score": 0.8574,
-            "macro_f1_score": 0.7952,
-            "weighted_f1_score": 0.8032,
-            "roc_auc": 0.9379
+            "accuracy": 0.819,
+            "precision": 0.7609,
+            "recall": 0.9902,
+            "f1_score": 0.8606,
+            "macro_f1_score": 0.8013,
+            "weighted_f1_score": 0.8089,
+            "roc_auc": 0.9387
         },
-        "train_f1": 0.865,
+        "train_metrics": {
+            "accuracy": 0.8244,
+            "precision": 0.7636,
+            "recall": 0.9975,
+            "f1_score": 0.865
+        },
+        "val_metrics": {
+            "accuracy": 0.811,
+            "precision": 0.7524,
+            "recall": 0.9912,
+            "f1_score": 0.8554
+        },
         "confusion_matrix": [
             [
-                3182,
-                2253
+                3246,
+                2189
             ],
             [
-                66,
-                6972
+                69,
+                6968
             ]
         ],
-        "classification_report": "              precision    recall  f1-score   support\n\n           0       0.98      0.59      0.73      5435\n           1       0.76      0.99      0.86      7038\n\n    accuracy                           0.81     12473\n   macro avg       0.87      0.79      0.80     12473\nweighted avg       0.85      0.81      0.80     12473\n"
+        "classification_report": "              precision    recall  f1-score   support\n\n           0       0.98      0.60      0.74      5435\n           1       0.76      0.99      0.86      7037\n\n    accuracy                           0.82     12472\n   macro avg       0.87      0.79      0.80     12472\nweighted avg       0.86      0.82      0.81     12472\n"
     }
 }

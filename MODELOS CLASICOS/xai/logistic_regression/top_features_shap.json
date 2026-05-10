@@ -1,82 +1,82 @@
 [
     {
+        "feature": "equo",
+        "importance": 0.32525075891896144
+    },
+    {
         "feature": "bng",
-        "importance": 0.29992467196372413
+        "importance": 0.29244597704126
     },
     {
         "feature": "sánchez",
-        "importance": 0.26126644480274935
+        "importance": 0.2552502166225376
     },
     {
         "feature": "num_chars",
-        "importance": 0.18172037213547523
-    },
-    {
-        "feature": "equo",
-        "importance": 0.16903461247000454
-    },
-    {
-        "feature": "eaj",
-        "importance": 0.12444226730703381
-    },
-    {
-        "feature": "eaj pnv",
-        "importance": 0.12444226730703381
-    },
-    {
-        "feature": "psoe",
-        "importance": 0.12149414165023519
-    },
-    {
-        "feature": "canarias",
-        "importance": 0.11777870154801082
-    },
-    {
-        "feature": "erc",
-        "importance": 0.11528835819869744
+        "importance": 0.23988971859350547
     },
     {
         "feature": "num_words",
-        "importance": 0.10236880646598355
+        "importance": 0.13490554404861332
     },
     {
-        "feature": "narbona",
-        "importance": 0.09885200536003716
+        "feature": "canarias",
+        "importance": 0.1286014674816206
     },
     {
-        "feature": "cristina",
-        "importance": 0.07557062566864316
+        "feature": "psoe",
+        "importance": 0.11650350838047537
     },
     {
-        "feature": "casado",
-        "importance": 0.07289047120911421
-    },
-    {
-        "feature": "pnv",
-        "importance": 0.0724659280263224
-    },
-    {
-        "feature": "iniciativo",
-        "importance": 0.06678643553175431
-    },
-    {
-        "feature": "per catalunya",
-        "importance": 0.06476939607513686
-    },
-    {
-        "feature": "cristina narbona",
-        "importance": 0.06382271962310608
+        "feature": "erc",
+        "importance": 0.11389037549698384
     },
     {
         "feature": "per",
-        "importance": 0.06342734171147402
+        "importance": 0.10409710904045319
     },
     {
-        "feature": "vers per",
-        "importance": 0.06311130765981454
+        "feature": "per catalunya",
+        "importance": 0.1004670596285533
+    },
+    {
+        "feature": "iniciativo",
+        "importance": 0.10014259564841956
     },
     {
         "feature": "vers",
-        "importance": 0.06311130765981454
+        "importance": 0.09463194305099337
+    },
+    {
+        "feature": "vers per",
+        "importance": 0.09463194305099337
+    },
+    {
+        "feature": "iniciativo vers",
+        "importance": 0.09402825591852026
+    },
+    {
+        "feature": "coalición canario",
+        "importance": 0.09209843498077859
+    },
+    {
+        "feature": "narbona",
+        "importance": 0.09137535959367707
+    },
+    {
+        "feature": "eaj",
+        "importance": 0.07372619478766715
+    },
+    {
+        "feature": "eaj pnv",
+        "importance": 0.07372619478766715
+    },
+    {
+        "feature": "cristina",
+        "importance": 0.07237339756074729
+    },
+    {
+        "feature": "canario",
+        "importance": 0.061218841418630356
     }
 ]

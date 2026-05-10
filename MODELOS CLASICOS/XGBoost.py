@@ -6,11 +6,9 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from sklearn.model_selection import train_test_split, learning_curve
+from sklearn.model_selection import train_test_split
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-
-from sklearn.pipeline import Pipeline
 
 from sklearn.metrics import (
     accuracy_score,
@@ -58,11 +56,11 @@ X_num = df[numeric_features]
 y = df['label']
 
 # =========================================================
-# SPLIT 70 / 10 / 20
+# SPLIT 70 / 20 / 10  (train / test / val)
 # =========================================================
 
 # -------------------------
-# 3. TRAIN (70) y TEMP (30)
+# 3. TRAIN (70%) y TEMP (30%)
 # -------------------------
 X_text_train, X_text_temp, \
 X_text_full_train, X_text_full_temp, \
@@ -80,19 +78,20 @@ y_train, y_temp = train_test_split(
 )
 
 # -------------------------
-# 4. VALIDATION (10) y TEST (20)
+# 4. TEST (20%) y VALIDATION (10%)
+#    test_size=1/3 del 30% restante -> test=20%, val=10%
 # -------------------------
-X_text_val, X_text_test, \
-X_text_full_val, X_text_full_test, \
-X_num_val, X_num_test, \
-y_val, y_test = train_test_split(
+X_text_test, X_text_val, \
+X_text_full_test, X_text_full_val, \
+X_num_test, X_num_val, \
+y_test, y_val = train_test_split(
 
     X_text_temp,
     X_text_full_temp,
     X_num_temp,
     y_temp,
 
-    test_size=2/3,
+    test_size=1/3,
     random_state=42,
     stratify=y_temp
 )
@@ -115,8 +114,7 @@ vectorizer = TfidfVectorizer(
 X_train_tfidf = vectorizer.fit_transform(X_text_train)
 
 # TRANSFORM
-X_val_tfidf = vectorizer.transform(X_text_val)
-
+X_val_tfidf  = vectorizer.transform(X_text_val)
 X_test_tfidf = vectorizer.transform(X_text_test)
 
 # =========================================================
@@ -132,8 +130,7 @@ scaler = StandardScaler()
 X_train_num = scaler.fit_transform(X_num_train)
 
 # TRANSFORM
-X_val_num = scaler.transform(X_num_val)
-
+X_val_num  = scaler.transform(X_num_val)
 X_test_num = scaler.transform(X_num_test)
 
 # =========================================================
@@ -143,18 +140,16 @@ X_test_num = scaler.transform(X_num_test)
 # -------------------------
 # 7. Combinar
 # -------------------------
-X_train_final = hstack([X_train_tfidf, X_train_num])
-
-X_val_final = hstack([X_val_tfidf, X_val_num])
-
-X_test_final = hstack([X_test_tfidf, X_test_num])
+X_train_final = hstack([X_train_tfidf, X_train_num]).tocsr()
+X_val_final   = hstack([X_val_tfidf,   X_val_num  ]).tocsr()
+X_test_final  = hstack([X_test_tfidf,  X_test_num ]).tocsr()
 
 # =========================================================
 # MODELO
 # =========================================================
 
 # -------------------------
-# 8. Modelo (CONFIG BUENA)
+# 8. Modelo XGBoost
 # -------------------------
 model = XGBClassifier(
     n_estimators=300,
@@ -172,11 +167,19 @@ model = XGBClassifier(
 # =========================================================
 
 # -------------------------
-# 9. Entrenamiento
+# 9. Entrenamiento con eval_set para capturar logloss por ronda
 # -------------------------
 start_time = time.time()
 
-model.fit(X_train_final, y_train)
+model.fit(
+    X_train_final,
+    y_train,
+    eval_set=[
+        (X_train_final, y_train),
+        (X_val_final,   y_val)
+    ],
+    verbose=False
+)
 
 end_time = time.time()
 
@@ -192,10 +195,7 @@ training_time = end_time - start_time
 y_val_probs = model.predict_proba(X_val_final)[:, 1]
 
 best_f1 = 0
-
 best_threshold = 0
-
-best_metrics = (0, 0, 0)
 
 # -------------------------
 # 11. Buscar mejor threshold
@@ -204,35 +204,29 @@ for t in np.arange(0.3, 0.7, 0.01):
 
     y_val_pred_temp = (y_val_probs >= t).astype(int)
 
-    precision_temp = precision_score(y_val, y_val_pred_temp)
-
-    recall_temp = recall_score(y_val, y_val_pred_temp)
-
     f1_temp = f1_score(y_val, y_val_pred_temp)
 
     if f1_temp > best_f1:
 
         best_f1 = f1_temp
-
         best_threshold = t
 
-        best_metrics = (
-            precision_temp,
-            recall_temp,
-            f1_temp
-        )
+# -------------------------
+# 12. Predicción VALIDACIÓN con mejor threshold
+# -------------------------
+y_val_pred = (y_val_probs >= best_threshold).astype(int)
 
 # =========================================================
 # TEST
 # =========================================================
 
 # -------------------------
-# 12. Probabilidades TEST
+# 13. Probabilidades TEST
 # -------------------------
 y_probs = model.predict_proba(X_test_final)[:, 1]
 
 # -------------------------
-# 13. Predicción TEST
+# 14. Predicción TEST
 # -------------------------
 y_pred = (y_probs >= best_threshold).astype(int)
 
@@ -241,7 +235,7 @@ y_pred = (y_probs >= best_threshold).astype(int)
 # =========================================================
 
 # -------------------------
-# 14. Métricas principales
+# 15. Métricas TEST
 # -------------------------
 accuracy = accuracy_score(y_test, y_pred)
 
@@ -264,7 +258,7 @@ weighted_f1 = f1_score(
 )
 
 # -------------------------
-# 15. ROC-AUC
+# 16. ROC-AUC
 # -------------------------
 roc_auc = roc_auc_score(
     y_test,
@@ -272,7 +266,7 @@ roc_auc = roc_auc_score(
 )
 
 # -------------------------
-# 16. Classification Report
+# 17. Classification Report
 # -------------------------
 class_report = classification_report(
     y_test,
@@ -280,7 +274,7 @@ class_report = classification_report(
 )
 
 # -------------------------
-# 17. Confusion Matrix
+# 18. Confusion Matrix
 # -------------------------
 conf_matrix = confusion_matrix(
     y_test,
@@ -292,17 +286,16 @@ conf_matrix = confusion_matrix(
 # =========================================================
 
 # -------------------------
-# 18. Resultados
+# 19. Resultados
 # -------------------------
 print("\n================================================")
-print("RESULTADOS - XGBOOST (OPTIMIZADO)")
+print("RESULTADOS - XGBOOST")
 print("================================================")
 
 print(f"\nMejor threshold: {best_threshold:.2f}")
-
 print(f"\nTiempo de entrenamiento: {training_time:.4f} segundos")
 
-print("\n--- MÉTRICAS ---")
+print("\n--- MÉTRICAS TEST ---")
 print(f"Accuracy: {accuracy:.4f}")
 print(f"Precision: {precision:.4f}")
 print(f"Recall: {recall:.4f}")
@@ -322,28 +315,29 @@ print(conf_matrix)
 # =========================================================
 
 # -------------------------
-# 19. Predicción TRAIN
-# -------------------------
-y_train_probs = model.predict_proba(X_train_final)[:, 1]
-
-y_train_pred = (y_train_probs >= best_threshold).astype(int)
-
-# -------------------------
 # 20. Métricas TRAIN
 # -------------------------
-train_accuracy = accuracy_score(y_train, y_train_pred)
+y_train_probs = model.predict_proba(X_train_final)[:, 1]
+y_train_pred  = (y_train_probs >= best_threshold).astype(int)
 
+train_accuracy  = accuracy_score(y_train, y_train_pred)
 train_precision = precision_score(y_train, y_train_pred)
-
-train_recall = recall_score(y_train, y_train_pred)
-
-train_f1 = f1_score(y_train, y_train_pred)
+train_recall    = recall_score(y_train, y_train_pred)
+train_f1        = f1_score(y_train, y_train_pred)
 
 # -------------------------
-# 21. Comparación TRAIN vs TEST
+# 21. Métricas VALIDACIÓN
+# -------------------------
+val_accuracy  = accuracy_score(y_val, y_val_pred)
+val_precision = precision_score(y_val, y_val_pred)
+val_recall    = recall_score(y_val, y_val_pred)
+val_f1        = f1_score(y_val, y_val_pred)
+
+# -------------------------
+# 22. Comparación TRAIN vs VAL vs TEST
 # -------------------------
 print("\n================================================")
-print("COMPARACIÓN TRAIN vs TEST")
+print("COMPARACIÓN TRAIN vs VAL vs TEST")
 print("================================================")
 
 print("\nTRAIN:")
@@ -351,6 +345,12 @@ print(f"Accuracy: {train_accuracy:.4f}")
 print(f"Precision: {train_precision:.4f}")
 print(f"Recall: {train_recall:.4f}")
 print(f"F1-score: {train_f1:.4f}")
+
+print("\nVALIDACIÓN:")
+print(f"Accuracy: {val_accuracy:.4f}")
+print(f"Precision: {val_precision:.4f}")
+print(f"Recall: {val_recall:.4f}")
+print(f"F1-score: {val_f1:.4f}")
 
 print("\nTEST:")
 print(f"Accuracy: {accuracy:.4f}")
@@ -363,7 +363,7 @@ print(f"F1-score: {f1:.4f}")
 # =========================================================
 
 # -------------------------
-# 22. Diccionario resultados
+# 23. Guardar JSON
 # -------------------------
 results = {
 
@@ -379,7 +379,6 @@ results = {
         "macro_f1_score": round(float(macro_f1), 4),
         "weighted_f1_score": round(float(weighted_f1), 4),
         "roc_auc": round(float(roc_auc), 4)
-
     },
 
     "train_metrics": {
@@ -387,7 +386,13 @@ results = {
         "precision": round(float(train_precision), 4),
         "recall": round(float(train_recall), 4),
         "f1_score": round(float(train_f1), 4)
+    },
 
+    "val_metrics": {
+        "accuracy": round(float(val_accuracy), 4),
+        "precision": round(float(val_precision), 4),
+        "recall": round(float(val_recall), 4),
+        "f1_score": round(float(val_f1), 4)
     },
 
     "confusion_matrix": conf_matrix.tolist(),
@@ -395,9 +400,6 @@ results = {
 
 }
 
-# -------------------------
-# 23. Guardar JSON
-# -------------------------
 with open("xgboost_results.json", "w", encoding="utf-8") as f:
 
     json.dump(
@@ -411,7 +413,7 @@ print("\nResultados guardados en:")
 print("xgboost_results.json")
 
 # =========================================================
-# 24. GRÁFICAS DE EVALUACIÓN
+# GRÁFICAS DE EVALUACIÓN
 # =========================================================
 
 print("\n================================================")
@@ -420,98 +422,71 @@ print("================================================")
 
 os.makedirs("graficas/xgboost", exist_ok=True)
 
-# -------------------------
-# Pipeline para learning curves (texto)
-# -------------------------
-pipeline_lc = Pipeline([
+# =========================================================
+# 24. Curva de Loss por ronda de boosting (eval_set)
+# =========================================================
+# XGBoost registra la logloss exacta en cada ronda durante el fit
+# Eje X = boosting round (equivalente directo a epoch)
 
-    ("tfidf", TfidfVectorizer(
-        max_features=15000,
-        ngram_range=(1, 2),
-        min_df=5,
-        max_df=0.85
-    )),
+evals = model.evals_result()
 
-    ("clf", XGBClassifier(
-        n_estimators=300,
-        max_depth=6,
-        learning_rate=0.1,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        eval_metric="logloss",
-        n_jobs=-1,
-        random_state=42
-    ))
-
-])
-
-# -------------------------
-# 24a. Learning Curve - F1
-# -------------------------
-train_sizes, train_scores, test_scores = learning_curve(
-
-    pipeline_lc,
-
-    X_text_train,
-    y_train,
-
-    cv=5,
-
-    scoring='f1',
-    n_jobs=-1,
-    train_sizes=np.linspace(0.1, 1.0, 5)
-)
-
-train_mean = train_scores.mean(axis=1)
-test_mean = test_scores.mean(axis=1)
+train_logloss = evals['validation_0']['logloss']
+val_logloss   = evals['validation_1']['logloss']
+rounds        = list(range(1, len(train_logloss) + 1))
 
 plt.figure(figsize=(8, 6))
-
-plt.plot(train_sizes, train_mean, label="Train F1")
-plt.plot(train_sizes, test_mean, label="Validation F1")
-
-plt.xlabel("Tamaño del conjunto de entrenamiento")
-plt.ylabel("F1-score")
-plt.title("Learning Curve - F1 - XGBoost")
+plt.plot(rounds, train_logloss, label="Train Loss")
+plt.plot(rounds, val_logloss,   label="Validación Loss")
+plt.xlabel("Ronda de boosting (n_estimators)")
+plt.ylabel("Log Loss")
+plt.title("Curva de Aprendizaje - Loss - XGBoost")
 plt.legend()
 plt.grid()
 plt.tight_layout()
 plt.savefig(
-    "graficas/xgboost/learning_curve_f1.png",
+    "graficas/xgboost/learning_curve_loss.png",
     bbox_inches='tight'
 )
 plt.close()
 
-print("[OK] learning_curve_f1.png")
+print("[OK] learning_curve_loss.png")
 
-# -------------------------
-# 24b. Learning Curve - Precisión
-# -------------------------
-train_sizes_p, train_scores_p, test_scores_p = learning_curve(
+# =========================================================
+# 25. Curva de Precision por checkpoints de ronda
+# =========================================================
+# iteration_range permite predecir usando solo los primeros N árboles
+# sin necesidad de reentrenar el modelo
 
-    pipeline_lc,
+tree_checkpoints = [10, 25, 50, 75, 100, 150, 200, 250, 300]
 
-    X_text_train,
-    y_train,
+conv_train_precisions = []
+conv_val_precisions   = []
 
-    cv=5,
+for n_trees in tree_checkpoints:
 
-    scoring='precision',
-    n_jobs=-1,
-    train_sizes=np.linspace(0.1, 1.0, 5)
-)
+    tp = model.predict_proba(
+        X_train_final,
+        iteration_range=(0, n_trees)
+    )[:, 1]
 
-train_mean_p = train_scores_p.mean(axis=1)
-test_mean_p = test_scores_p.mean(axis=1)
+    vp = model.predict_proba(
+        X_val_final,
+        iteration_range=(0, n_trees)
+    )[:, 1]
+
+    conv_train_precisions.append(
+        precision_score(y_train, (tp >= best_threshold).astype(int))
+    )
+    conv_val_precisions.append(
+        precision_score(y_val, (vp >= best_threshold).astype(int))
+    )
 
 plt.figure(figsize=(8, 6))
-
-plt.plot(train_sizes_p, train_mean_p, label="Train Precision")
-plt.plot(train_sizes_p, test_mean_p, label="Validation Precision")
-
-plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.plot(tree_checkpoints, conv_train_precisions, marker='o', label="Train Precision")
+plt.plot(tree_checkpoints, conv_val_precisions,   marker='o', label="Validación Precision")
+plt.xlabel("Ronda de boosting (n_estimators)")
 plt.ylabel("Precision")
-plt.title("Learning Curve - Precisión - XGBoost")
+plt.title("Curva de Aprendizaje - Precisión - XGBoost")
 plt.legend()
 plt.grid()
 plt.tight_layout()
@@ -524,46 +499,42 @@ plt.close()
 print("[OK] learning_curve_precision.png")
 
 # -------------------------
-# 24c. Learning Curve - Loss
+# 26. Barras: métricas Train / Validación / Test
 # -------------------------
-train_sizes_l, train_scores_l, test_scores_l = learning_curve(
+metrics_labels = ['Accuracy', 'Precision', 'Recall', 'F1-score']
 
-    pipeline_lc,
+train_values = [train_accuracy, train_precision, train_recall, train_f1]
+val_values   = [val_accuracy,   val_precision,   val_recall,   val_f1]
+test_values  = [accuracy,       precision,       recall,       f1]
 
-    X_text_train,
-    y_train,
+x = np.arange(len(metrics_labels))
+width = 0.25
 
-    cv=5,
+fig, ax = plt.subplots(figsize=(9, 6))
 
-    scoring='neg_log_loss',
-    n_jobs=-1,
-    train_sizes=np.linspace(0.1, 1.0, 5)
-)
+ax.bar(x - width, train_values, width, label='Train')
+ax.bar(x,         val_values,   width, label='Validación')
+ax.bar(x + width, test_values,  width, label='Test')
 
-train_mean_l = -train_scores_l.mean(axis=1)
-test_mean_l = -test_scores_l.mean(axis=1)
-
-plt.figure(figsize=(8, 6))
-
-plt.plot(train_sizes_l, train_mean_l, label="Train Loss")
-plt.plot(train_sizes_l, test_mean_l, label="Validation Loss")
-
-plt.xlabel("Tamaño del conjunto de entrenamiento")
-plt.ylabel("Log Loss")
-plt.title("Learning Curve - Loss - XGBoost")
-plt.legend()
-plt.grid()
+ax.set_xlabel("Métrica")
+ax.set_ylabel("Valor")
+ax.set_title("Métricas Train / Validación / Test - XGBoost")
+ax.set_xticks(x)
+ax.set_xticklabels(metrics_labels)
+ax.set_ylim(0, 1.05)
+ax.legend()
+ax.grid(axis='y')
 plt.tight_layout()
 plt.savefig(
-    "graficas/xgboost/learning_curve_loss.png",
+    "graficas/xgboost/metrics_comparison.png",
     bbox_inches='tight'
 )
 plt.close()
 
-print("[OK] learning_curve_loss.png")
+print("[OK] metrics_comparison.png")
 
 # -------------------------
-# 24d. Matriz de Confusión
+# 27. Matriz de Confusión
 # -------------------------
 plt.figure(figsize=(7, 5))
 
@@ -589,7 +560,7 @@ plt.close()
 print("[OK] confusion_matrix.png")
 
 # -------------------------
-# 24e. Curva ROC-AUC
+# 28. Curva ROC-AUC
 # -------------------------
 fpr, tpr, _ = roc_curve(y_test, y_probs)
 
@@ -615,11 +586,8 @@ print("[OK] roc_auc_curve.png")
 print("\nGráficas guardadas en: graficas/xgboost/")
 
 # =========================================================
-# 25. EXPLICABILIDAD (SHAP + LIME)
+# 29. EXPLICABILIDAD (SHAP + LIME)
 # =========================================================
-
-# INSTALAR:
-# pip install shap lime
 
 import shap
 
@@ -640,13 +608,6 @@ tfidf_feature_names = vectorizer.get_feature_names_out()
 all_feature_names = list(tfidf_feature_names) + numeric_features
 
 # =========================================================
-# CSR
-# =========================================================
-
-X_train_final = X_train_final.tocsr()
-X_test_final = X_test_final.tocsr()
-
-# =========================================================
 # SHAP
 # =========================================================
 
@@ -654,30 +615,17 @@ print("\n================================================")
 print("GENERANDO EXPLICACIONES SHAP")
 print("================================================")
 
-# =========================================================
-# SAMPLE SHAP
-# =========================================================
-
 sample_size = 200
 
 X_shap_sample = X_test_final[:sample_size].toarray()
 
-# =========================================================
-# SHAP EXPLAINER
-# =========================================================
-
 explainer = shap.TreeExplainer(model)
-
-# =========================================================
-# SHAP VALUES
-# =========================================================
 
 shap_values = explainer.shap_values(X_shap_sample)
 
-# =========================================================
+# -------------------------
 # SHAP SUMMARY PLOT
-# =========================================================
-
+# -------------------------
 plt.figure()
 
 shap.summary_plot(
@@ -699,10 +647,9 @@ plt.close()
 
 print("[OK] shap_summary_plot.png")
 
-# =========================================================
+# -------------------------
 # SHAP BAR PLOT
-# =========================================================
-
+# -------------------------
 plt.figure()
 
 shap.summary_plot(
@@ -725,43 +672,28 @@ plt.close()
 
 print("[OK] shap_bar_plot.png")
 
-# =========================================================
+# -------------------------
 # SAMPLE FAKE CORRECTAMENTE CLASIFICADA
-# =========================================================
-
+# -------------------------
 sample_probs = y_probs[:sample_size]
 
-# predichas como FAKE
 pred_fake = sample_probs >= best_threshold
+real_fake  = y_test.iloc[:sample_size].values == 1
 
-# realmente FAKE
-real_fake = y_test.iloc[:sample_size].values == 1
+correct_fake_indices = np.where(pred_fake & real_fake)[0]
 
-# intersección
-correct_fake_indices = np.where(
-    pred_fake & real_fake
-)[0]
+fake_confidences = np.abs(sample_probs[correct_fake_indices] - 0.5)
 
-# confianza
-fake_confidences = np.abs(
-    sample_probs[correct_fake_indices] - 0.5
-)
+sample_index = correct_fake_indices[np.argmax(fake_confidences)]
 
-# fake correcta más confiada
-sample_index = correct_fake_indices[
-    np.argmax(fake_confidences)
-]
-
-# =========================================================
+# -------------------------
 # SHAP WATERFALL
-# =========================================================
-
-sample_dense = X_shap_sample[sample_index]
-
-sample_shap_values = shap_values[sample_index]
+# -------------------------
+sample_dense      = X_shap_sample[sample_index]
+sample_shap_vals  = shap_values[sample_index]
 
 explanation = shap.Explanation(
-    values=sample_shap_values,
+    values=sample_shap_vals,
     base_values=explainer.expected_value,
     data=sample_dense,
     feature_names=all_feature_names
@@ -783,10 +715,6 @@ plt.close()
 
 print("[OK] shap_waterfall_plot.png")
 
-# =========================================================
-# GUARDAR TEXTO SHAP
-# =========================================================
-
 with open(
     "xai/xgboost/shap_explained_text.txt",
     "w",
@@ -801,10 +729,9 @@ with open(
 
 print("[OK] shap_explained_text.txt")
 
-# =========================================================
+# -------------------------
 # TOP FEATURES JSON
-# =========================================================
-
+# -------------------------
 mean_abs_shap = np.abs(shap_values).mean(axis=0)
 
 top_idx = np.argsort(mean_abs_shap)[::-1][:20]
@@ -853,6 +780,14 @@ text_mapping_dict = dict(
 )
 
 # =========================================================
+# VALORES NUMÉRICOS REALES DEL SAMPLE
+# =========================================================
+
+# sample_index viene de la sección SHAP (fake más confiada)
+# LIME solo perturba el texto; las features numéricas se mantienen constantes
+lime_sample_num = X_test_num[sample_index: sample_index + 1]
+
+# =========================================================
 # FUNCIÓN PREDICT PROBA PARA LIME
 # =========================================================
 
@@ -875,17 +810,13 @@ def predict_proba_lime(texts):
     # TF-IDF
     tfidf = vectorizer.transform(processed_texts)
 
-    # numéricas vacías
-    numeric_zeros = np.zeros(
-        (len(processed_texts), len(numeric_features))
-    )
+    # repetir los valores numéricos reales del sample para cada perturbación
+    n = len(processed_texts)
+    numeric_repeated = np.tile(lime_sample_num, (n, 1))
 
     # combinar
-    final = hstack([tfidf, numeric_zeros])
+    final = hstack([tfidf, numeric_repeated]).tocsr()
 
-    final = final.tocsr()
-
-    # probabilidades
     probs = model.predict_proba(final)
 
     return probs

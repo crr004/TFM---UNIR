@@ -1,82 +1,82 @@
 [
     {
         "feature": "bárcena",
-        "importance": 1.1869796514511108
-    },
-    {
-        "feature": "lertxundi",
-        "importance": 0.9265212416648865
+        "importance": 1.1861886978149414
     },
     {
         "feature": "josé primo",
-        "importance": 0.9258744716644287
+        "importance": 0.9296495914459229
+    },
+    {
+        "feature": "lertxundi",
+        "importance": 0.9287621378898621
     },
     {
         "feature": "jordi sevilla",
-        "importance": 0.9236074090003967
+        "importance": 0.9213311672210693
     },
     {
         "feature": "erc",
-        "importance": 0.8992730975151062
+        "importance": 0.9033905267715454
     },
     {
         "feature": "boluarte",
-        "importance": 0.7739455699920654
-    },
-    {
-        "feature": "equo",
-        "importance": 0.7662485241889954
+        "importance": 0.7741042375564575
     },
     {
         "feature": "cospedal",
-        "importance": 0.7607530355453491
+        "importance": 0.758380115032196
+    },
+    {
+        "feature": "equo",
+        "importance": 0.752632737159729
     },
     {
         "feature": "carlos prieto",
-        "importance": 0.7548151612281799
-    },
-    {
-        "feature": "compromís",
-        "importance": 0.7264025211334229
+        "importance": 0.7462759613990784
     },
     {
         "feature": "campoamor",
-        "importance": 0.7252326011657715
+        "importance": 0.7243755459785461
+    },
+    {
+        "feature": "compromís",
+        "importance": 0.7237389087677002
     },
     {
         "feature": "aznar",
-        "importance": 0.6746051907539368
+        "importance": 0.6748896837234497
     },
     {
         "feature": "fac",
-        "importance": 0.654895007610321
+        "importance": 0.6550947427749634
     },
     {
         "feature": "enciso",
-        "importance": 0.631269097328186
+        "importance": 0.6304890513420105
     },
     {
         "feature": "rodríguez rubio",
-        "importance": 0.6233305931091309
+        "importance": 0.621900200843811
     },
     {
         "feature": "maría cataluña",
-        "importance": 0.6088011264801025
+        "importance": 0.6073309183120728
     },
     {
         "feature": "teo",
-        "importance": 0.584617018699646
+        "importance": 0.5835800766944885
     },
     {
         "feature": "fernandez",
-        "importance": 0.5799928307533264
+        "importance": 0.5818936228752136
     },
     {
         "feature": "pau ricom",
-        "importance": 0.5579733848571777
+        "importance": 0.5558949112892151
     },
     {
         "feature": "eduardo rubiño",
-        "importance": 0.5534014105796814
+        "importance": 0.5542576313018799
     }
 ]

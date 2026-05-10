@@ -1,3 +1,4 @@
+import warnings
 import pandas as pd
 import numpy as np
 import time
@@ -6,11 +7,11 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from sklearn.model_selection import train_test_split, learning_curve
+from sklearn.exceptions import ConvergenceWarning
+
+from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import LinearSVC
-
-from sklearn.pipeline import Pipeline
 
 from sklearn.metrics import (
     accuracy_score,
@@ -19,6 +20,7 @@ from sklearn.metrics import (
     f1_score,
     roc_auc_score,
     roc_curve,
+    hinge_loss,
     classification_report,
     confusion_matrix
 )
@@ -58,11 +60,11 @@ X_num = df[numeric_features]
 y = df['label']
 
 # =========================================================
-# SPLIT 70 / 10 / 20
+# SPLIT 70 / 20 / 10  (train / test / val)
 # =========================================================
 
 # -------------------------
-# 3. TRAIN (70) y TEMP (30)
+# 3. TRAIN (70%) y TEMP (30%)
 # -------------------------
 X_text_train, X_text_temp, \
 X_text_full_train, X_text_full_temp, \
@@ -80,19 +82,20 @@ y_train, y_temp = train_test_split(
 )
 
 # -------------------------
-# 4. VALIDATION (10) y TEST (20)
+# 4. TEST (20%) y VALIDATION (10%)
+#    test_size=1/3 del 30% restante -> test=20%, val=10%
 # -------------------------
-X_text_val, X_text_test, \
-X_text_full_val, X_text_full_test, \
-X_num_val, X_num_test, \
-y_val, y_test = train_test_split(
+X_text_test, X_text_val, \
+X_text_full_test, X_text_full_val, \
+X_num_test, X_num_val, \
+y_test, y_val = train_test_split(
 
     X_text_temp,
     X_text_full_temp,
     X_num_temp,
     y_temp,
 
-    test_size=2/3,
+    test_size=1/3,
     random_state=42,
     stratify=y_temp
 )
@@ -129,9 +132,9 @@ X_test_num = scaler.transform(X_num_test)
 # -------------------------
 # 7. Combinar
 # -------------------------
-X_train_final = hstack([X_train_tfidf, X_train_num])
-X_val_final = hstack([X_val_tfidf, X_val_num])
-X_test_final = hstack([X_test_tfidf, X_test_num])
+X_train_final = hstack([X_train_tfidf, X_train_num]).tocsr()
+X_val_final   = hstack([X_val_tfidf,   X_val_num  ]).tocsr()
+X_test_final  = hstack([X_test_tfidf,  X_test_num ]).tocsr()
 
 # -------------------------
 # 8. Modelo SVM (Linear)
@@ -154,29 +157,26 @@ end_time = time.time()
 training_time = end_time - start_time
 
 # =========================================================
-# VALIDACIÓN
+# PREDICCIONES
 # =========================================================
 
 # -------------------------
-# 10. Predicción VALIDACIÓN
-# -------------------------
-y_val_pred = model.predict(X_val_final)
-
-# =========================================================
-# TEST
-# =========================================================
-
-# -------------------------
-# 11. Predicción TEST
+# 10. Predicción TEST
 # -------------------------
 y_pred = model.predict(X_test_final)
+
+# -------------------------
+# 11. Scores TEST (decision_function)
+# LinearSVC no tiene predict_proba
+# -------------------------
+y_scores = model.decision_function(X_test_final)
 
 # =========================================================
 # MÉTRICAS TEST
 # =========================================================
 
 # -------------------------
-# 12. Métricas principales
+# 12. Métricas principales TEST
 # -------------------------
 accuracy = accuracy_score(y_test, y_pred)
 
@@ -201,11 +201,6 @@ weighted_f1 = f1_score(
 # -------------------------
 # 13. ROC-AUC
 # -------------------------
-# LinearSVC no tiene predict_proba
-# usamos decision_function
-
-y_scores = model.decision_function(X_test_final)
-
 roc_auc = roc_auc_score(
     y_test,
     y_scores
@@ -240,7 +235,7 @@ print("================================================")
 
 print(f"\nTraining Time: {training_time:.4f} segundos")
 
-print("\n--- MÉTRICAS ---")
+print("\n--- MÉTRICAS TEST ---")
 print(f"Accuracy: {accuracy:.4f}")
 print(f"Precision: {precision:.4f}")
 print(f"Recall: {recall:.4f}")
@@ -260,26 +255,30 @@ print(conf_matrix)
 # =========================================================
 
 # -------------------------
-# 17. Predicción TRAIN
+# 17. Predicción y métricas TRAIN
 # -------------------------
 y_train_pred = model.predict(X_train_final)
 
-# -------------------------
-# 18. Métricas TRAIN
-# -------------------------
-train_accuracy = accuracy_score(y_train, y_train_pred)
-
+train_accuracy  = accuracy_score(y_train, y_train_pred)
 train_precision = precision_score(y_train, y_train_pred)
-
-train_recall = recall_score(y_train, y_train_pred)
-
-train_f1 = f1_score(y_train, y_train_pred)
+train_recall    = recall_score(y_train, y_train_pred)
+train_f1        = f1_score(y_train, y_train_pred)
 
 # -------------------------
-# 19. Comparación TRAIN vs TEST
+# 18. Predicción y métricas VALIDACIÓN
+# -------------------------
+y_val_pred = model.predict(X_val_final)
+
+val_accuracy  = accuracy_score(y_val, y_val_pred)
+val_precision = precision_score(y_val, y_val_pred)
+val_recall    = recall_score(y_val, y_val_pred)
+val_f1        = f1_score(y_val, y_val_pred)
+
+# -------------------------
+# 19. Comparación TRAIN vs VAL vs TEST
 # -------------------------
 print("\n================================================")
-print("COMPARACIÓN TRAIN vs TEST")
+print("COMPARACIÓN TRAIN vs VAL vs TEST")
 print("================================================")
 
 print("\nTRAIN:")
@@ -287,6 +286,12 @@ print(f"Accuracy: {train_accuracy:.4f}")
 print(f"Precision: {train_precision:.4f}")
 print(f"Recall: {train_recall:.4f}")
 print(f"F1-score: {train_f1:.4f}")
+
+print("\nVALIDACIÓN:")
+print(f"Accuracy: {val_accuracy:.4f}")
+print(f"Precision: {val_precision:.4f}")
+print(f"Recall: {val_recall:.4f}")
+print(f"F1-score: {val_f1:.4f}")
 
 print("\nTEST:")
 print(f"Accuracy: {accuracy:.4f}")
@@ -299,7 +304,7 @@ print(f"F1-score: {f1:.4f}")
 # =========================================================
 
 # -------------------------
-# 20. Diccionario resultados
+# 20. Guardar JSON
 # -------------------------
 results = {
 
@@ -313,7 +318,6 @@ results = {
         "macro_f1_score": round(float(macro_f1), 4),
         "weighted_f1_score": round(float(weighted_f1), 4),
         "roc_auc": round(float(roc_auc), 4)
-
     },
 
     "train_metrics": {
@@ -321,7 +325,13 @@ results = {
         "precision": round(float(train_precision), 4),
         "recall": round(float(train_recall), 4),
         "f1_score": round(float(train_f1), 4)
+    },
 
+    "val_metrics": {
+        "accuracy": round(float(val_accuracy), 4),
+        "precision": round(float(val_precision), 4),
+        "recall": round(float(val_recall), 4),
+        "f1_score": round(float(val_f1), 4)
     },
 
     "confusion_matrix": conf_matrix.tolist(),
@@ -329,9 +339,6 @@ results = {
 
 }
 
-# -------------------------
-# 21. Guardar JSON
-# -------------------------
 with open("svm_results.json", "w", encoding="utf-8") as f:
 
     json.dump(
@@ -345,7 +352,7 @@ print("\nResultados guardados en:")
 print("svm_results.json")
 
 # =========================================================
-# 22. GRÁFICAS DE EVALUACIÓN
+# GRÁFICAS DE EVALUACIÓN
 # =========================================================
 
 print("\n================================================")
@@ -354,95 +361,71 @@ print("================================================")
 
 os.makedirs("graficas/svm", exist_ok=True)
 
-# -------------------------
-# Pipeline para learning curves (texto)
-# -------------------------
-pipeline_lc = Pipeline([
+# =========================================================
+# 21. Curvas de convergencia (Hinge Loss y Precision vs iteraciones)
+# =========================================================
+# Se entrena LinearSVC con max_iter creciente y tol muy bajo
+# para mostrar la convergencia del solver (equivalente a epochs)
+# La loss del SVM es Hinge Loss, no log-loss
 
-    ("tfidf", TfidfVectorizer(
-        max_features=15000,
-        ngram_range=(1, 2),
-        min_df=5,
-        max_df=0.85
-    )),
+iter_checkpoints = [50, 100, 200, 500, 1000, 2000, 3000]
 
-    ("clf", CalibratedClassifierCV(
-        LinearSVC(
+conv_train_losses     = []
+conv_val_losses       = []
+conv_train_precisions = []
+conv_val_precisions   = []
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    for n_iter in iter_checkpoints:
+
+        conv_svm = LinearSVC(
             C=0.5,
             class_weight=None,
-            max_iter=3000
+            max_iter=n_iter,
+            tol=1e-10
         )
-    ))
 
-])
+        conv_svm.fit(X_train_final, y_train)
 
-# -------------------------
-# 22a. Learning Curve - F1
-# -------------------------
-train_sizes, train_scores, test_scores = learning_curve(
+        train_scores_conv = conv_svm.decision_function(X_train_final)
+        val_scores_conv   = conv_svm.decision_function(X_val_final)
 
-    pipeline_lc,
+        conv_train_losses.append(hinge_loss(y_train, train_scores_conv))
+        conv_val_losses.append(hinge_loss(y_val,   val_scores_conv))
 
-    X_text_train,
-    y_train,
+        conv_train_precisions.append(
+            precision_score(y_train, conv_svm.predict(X_train_final))
+        )
+        conv_val_precisions.append(
+            precision_score(y_val, conv_svm.predict(X_val_final))
+        )
 
-    cv=5,
-
-    scoring='f1',
-    n_jobs=-1,
-    train_sizes=np.linspace(0.1, 1.0, 5)
-)
-
-train_mean = train_scores.mean(axis=1)
-test_mean = test_scores.mean(axis=1)
-
+# Hinge Loss curve
 plt.figure(figsize=(8, 6))
-
-plt.plot(train_sizes, train_mean, label="Train F1")
-plt.plot(train_sizes, test_mean, label="Validation F1")
-
-plt.xlabel("Tamaño del conjunto de entrenamiento")
-plt.ylabel("F1-score")
-plt.title("Learning Curve - F1 - SVM")
+plt.plot(iter_checkpoints, conv_train_losses, marker='o', label="Train Hinge Loss")
+plt.plot(iter_checkpoints, conv_val_losses,   marker='o', label="Validación Hinge Loss")
+plt.xlabel("Iteraciones del solver")
+plt.ylabel("Hinge Loss")
+plt.title("Curva de Aprendizaje - Loss - SVM (LinearSVC)")
 plt.legend()
 plt.grid()
 plt.tight_layout()
 plt.savefig(
-    "graficas/svm/learning_curve_f1.png",
+    "graficas/svm/learning_curve_loss.png",
     bbox_inches='tight'
 )
 plt.close()
 
-print("[OK] learning_curve_f1.png")
+print("[OK] learning_curve_loss.png")
 
-# -------------------------
-# 22b. Learning Curve - Precisión
-# -------------------------
-train_sizes_p, train_scores_p, test_scores_p = learning_curve(
-
-    pipeline_lc,
-
-    X_text_train,
-    y_train,
-
-    cv=5,
-
-    scoring='precision',
-    n_jobs=-1,
-    train_sizes=np.linspace(0.1, 1.0, 5)
-)
-
-train_mean_p = train_scores_p.mean(axis=1)
-test_mean_p = test_scores_p.mean(axis=1)
-
+# Precision curve
 plt.figure(figsize=(8, 6))
-
-plt.plot(train_sizes_p, train_mean_p, label="Train Precision")
-plt.plot(train_sizes_p, test_mean_p, label="Validation Precision")
-
-plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.plot(iter_checkpoints, conv_train_precisions, marker='o', label="Train Precision")
+plt.plot(iter_checkpoints, conv_val_precisions,   marker='o', label="Validación Precision")
+plt.xlabel("Iteraciones del solver")
 plt.ylabel("Precision")
-plt.title("Learning Curve - Precisión - SVM")
+plt.title("Curva de Aprendizaje - Precisión - SVM (LinearSVC)")
 plt.legend()
 plt.grid()
 plt.tight_layout()
@@ -455,47 +438,42 @@ plt.close()
 print("[OK] learning_curve_precision.png")
 
 # -------------------------
-# 22c. Learning Curve - Hinge Loss
-# LinearSVC no soporta neg_log_loss, se usa neg_hinge_loss
+# 22. Barras: métricas Train / Validación / Test
 # -------------------------
-train_sizes_l, train_scores_l, test_scores_l = learning_curve(
+metrics_labels = ['Accuracy', 'Precision', 'Recall', 'F1-score']
 
-    pipeline_lc,
+train_values = [train_accuracy, train_precision, train_recall, train_f1]
+val_values   = [val_accuracy,   val_precision,   val_recall,   val_f1]
+test_values  = [accuracy,       precision,       recall,       f1]
 
-    X_text_train,
-    y_train,
+x = np.arange(len(metrics_labels))
+width = 0.25
 
-    cv=5,
+fig, ax = plt.subplots(figsize=(9, 6))
 
-    scoring='neg_log_loss',
-    n_jobs=-1,
-    train_sizes=np.linspace(0.1, 1.0, 5)
-)
+ax.bar(x - width, train_values, width, label='Train')
+ax.bar(x,         val_values,   width, label='Validación')
+ax.bar(x + width, test_values,  width, label='Test')
 
-train_mean_l = -train_scores_l.mean(axis=1)
-test_mean_l = -test_scores_l.mean(axis=1)
-
-plt.figure(figsize=(8, 6))
-
-plt.plot(train_sizes_l, train_mean_l, label="Train Loss")
-plt.plot(train_sizes_l, test_mean_l, label="Validation Loss")
-
-plt.xlabel("Tamaño del conjunto de entrenamiento")
-plt.ylabel("Log Loss")
-plt.title("Learning Curve - Loss - SVM")
-plt.legend()
-plt.grid()
+ax.set_xlabel("Métrica")
+ax.set_ylabel("Valor")
+ax.set_title("Métricas Train / Validación / Test - SVM (LinearSVC)")
+ax.set_xticks(x)
+ax.set_xticklabels(metrics_labels)
+ax.set_ylim(0, 1.05)
+ax.legend()
+ax.grid(axis='y')
 plt.tight_layout()
 plt.savefig(
-    "graficas/svm/learning_curve_loss.png",
+    "graficas/svm/metrics_comparison.png",
     bbox_inches='tight'
 )
 plt.close()
 
-print("[OK] learning_curve_loss.png")
+print("[OK] metrics_comparison.png")
 
 # -------------------------
-# 22d. Matriz de Confusión
+# 23. Matriz de Confusión
 # -------------------------
 plt.figure(figsize=(7, 5))
 
@@ -521,7 +499,7 @@ plt.close()
 print("[OK] confusion_matrix.png")
 
 # -------------------------
-# 22e. Curva ROC-AUC
+# 24. Curva ROC-AUC
 # LinearSVC usa decision_function como score
 # -------------------------
 fpr, tpr, _ = roc_curve(y_test, y_scores)
@@ -548,11 +526,8 @@ print("[OK] roc_auc_curve.png")
 print("\nGráficas guardadas en: graficas/svm/")
 
 # =========================================================
-# 23. EXPLICABILIDAD (SHAP + LIME)
+# 25. EXPLICABILIDAD (SHAP + LIME)
 # =========================================================
-
-# INSTALAR:
-# pip install shap lime
 
 import shap
 
@@ -580,34 +555,20 @@ print("\n================================================")
 print("GENERANDO EXPLICACIONES SHAP")
 print("================================================")
 
-# convertir a CSR
-X_train_final = X_train_final.tocsr()
-X_test_final = X_test_final.tocsr()
-
-# sample pequeño para RAM
 sample_size = 200
 
 X_shap_sample = X_test_final[:sample_size]
-
-# =========================================================
-# SHAP EXPLAINER
-# =========================================================
 
 explainer = shap.LinearExplainer(
     model,
     X_train_final
 )
 
-# =========================================================
-# SHAP VALUES
-# =========================================================
-
 shap_values = explainer.shap_values(X_shap_sample)
 
-# =========================================================
+# -------------------------
 # SHAP SUMMARY PLOT
-# =========================================================
-
+# -------------------------
 plt.figure()
 
 shap.summary_plot(
@@ -629,10 +590,9 @@ plt.close()
 
 print("[OK] shap_summary_plot.png")
 
-# =========================================================
+# -------------------------
 # SHAP BAR PLOT
-# =========================================================
-
+# -------------------------
 plt.figure()
 
 shap.summary_plot(
@@ -655,10 +615,9 @@ plt.close()
 
 print("[OK] shap_bar_plot.png")
 
-# =========================================================
+# -------------------------
 # SHAP WATERFALL
-# =========================================================
-
+# -------------------------
 sample_index = 0
 
 sample_dense = X_shap_sample[sample_index].toarray()[0]
@@ -698,10 +657,9 @@ with open(
     f.write("\n\n===== TEXTO PROCESADO =====\n\n")
     f.write(X_text_test.iloc[sample_index])
 
-# =========================================================
+# -------------------------
 # TOP FEATURES JSON
-# =========================================================
-
+# -------------------------
 mean_abs_shap = np.abs(shap_values).mean(axis=0)
 
 top_idx = np.argsort(mean_abs_shap)[::-1][:20]
@@ -750,6 +708,17 @@ text_mapping_dict = dict(
 )
 
 # =========================================================
+# SAMPLE INDEX Y VALORES NUMÉRICOS REALES
+# =========================================================
+
+# sample más confiado según decision_function
+lime_sample_idx = int(np.argmax(np.abs(y_scores)))
+
+# valores numéricos del sample real ya normalizados (shape 1 x n_numeric)
+# LIME solo perturba el texto; las features numéricas se mantienen constantes
+lime_sample_num = X_test_num[lime_sample_idx: lime_sample_idx + 1]
+
+# =========================================================
 # FUNCIÓN PREDICT PARA LIME
 # =========================================================
 
@@ -772,28 +741,20 @@ def predict_proba_lime(texts):
     # TF-IDF
     tfidf = vectorizer.transform(processed_texts)
 
-    # features numéricas vacías
-    numeric_zeros = np.zeros(
-        (len(processed_texts), len(numeric_features))
-    )
+    # repetir los valores numéricos reales del sample para cada perturbación
+    n = len(processed_texts)
+    numeric_repeated = np.tile(lime_sample_num, (n, 1))
 
     # combinar
-    final = hstack([tfidf, numeric_zeros])
+    final = hstack([tfidf, numeric_repeated]).tocsr()
 
-    final = final.tocsr()
-
-    # scores SVM
+    # scores SVM -> pseudo-probabilidades con sigmoid
     scores = model.decision_function(final)
 
-    # pseudo-probabilidades
     probs_fake = 1 / (1 + np.exp(-scores))
-
     probs_real = 1 - probs_fake
 
-    probs = np.vstack([
-        probs_real,
-        probs_fake
-    ]).T
+    probs = np.vstack([probs_real, probs_fake]).T
 
     return probs
 
@@ -806,14 +767,10 @@ lime_explainer = LimeTextExplainer(
 )
 
 # =========================================================
-# SAMPLE TEXT
+# TEXTO ORIGINAL
 # =========================================================
 
-confidence_scores = np.abs(y_scores - 0)
-
-sample_index = np.argmax(confidence_scores)
-
-sample_text = X_text_full_test.iloc[sample_index]
+sample_text = X_text_full_test.iloc[lime_sample_idx]
 
 # =========================================================
 # GENERAR EXPLICACIÓN
@@ -839,11 +796,15 @@ print("[OK] lime_explanation.html")
 # GUARDAR FEATURES LIME JSON
 # =========================================================
 
-lime_features = []
+lime_data = {
+    "original_text": X_text_full_test.iloc[lime_sample_idx],
+    "processed_text": X_text_test.iloc[lime_sample_idx],
+    "features": []
+}
 
 for feature, weight in lime_exp.as_list():
 
-    lime_features.append({
+    lime_data["features"].append({
         "feature": feature,
         "weight": float(weight)
     })
@@ -855,7 +816,7 @@ with open(
 ) as f:
 
     json.dump(
-        lime_features,
+        lime_data,
         f,
         indent=4,
         ensure_ascii=False

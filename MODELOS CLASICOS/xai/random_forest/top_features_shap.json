@@ -1,82 +1,82 @@
 [
     {
-        "feature": "num_mayusculas",
-        "importance": 0.009734186704058402
-    },
-    {
-        "feature": "eaj",
-        "importance": 0.008957464135286936
-    },
-    {
         "feature": "equo",
-        "importance": 0.008072529437140593
-    },
-    {
-        "feature": "eaj pnv",
-        "importance": 0.0076680353946222465
-    },
-    {
-        "feature": "bng",
-        "importance": 0.007518621197763674
+        "importance": 0.013172362046691881
     },
     {
         "feature": "per",
-        "importance": 0.006900217650950705
+        "importance": 0.010289351675611694
+    },
+    {
+        "feature": "num_mayusculas",
+        "importance": 0.009953519964132617
     },
     {
         "feature": "per catalunya",
-        "importance": 0.006691257520285044
+        "importance": 0.009262944156315405
     },
     {
         "feature": "vers",
-        "importance": 0.006174923624916383
+        "importance": 0.00835134484173915
     },
     {
         "feature": "iniciativo vers",
-        "importance": 0.006044265680403985
-    },
-    {
-        "feature": "narbona",
-        "importance": 0.00594789219468391
-    },
-    {
-        "feature": "psoe",
-        "importance": 0.0057065140778321
-    },
-    {
-        "feature": "sánchez",
-        "importance": 0.005696609993724271
+        "importance": 0.008131724231053272
     },
     {
         "feature": "vers per",
-        "importance": 0.005401752279889618
+        "importance": 0.007352288133246166
     },
     {
-        "feature": "cristina",
-        "importance": 0.005350969364000808
-    },
-    {
-        "feature": "pnv",
-        "importance": 0.0051720618612774985
+        "feature": "bng",
+        "importance": 0.007241626153060415
     },
     {
         "feature": "iniciativo",
-        "importance": 0.004992686528448915
+        "importance": 0.006930779198905499
     },
     {
         "feature": "catalunya",
-        "importance": 0.0044049724216156895
+        "importance": 0.006507404730275889
+    },
+    {
+        "feature": "sánchez",
+        "importance": 0.005750810705033665
+    },
+    {
+        "feature": "psoe",
+        "importance": 0.005279580117761532
+    },
+    {
+        "feature": "eaj",
+        "importance": 0.00509843201440843
+    },
+    {
+        "feature": "canario",
+        "importance": 0.005093113132146729
     },
     {
         "feature": "canarias",
-        "importance": 0.0041175531995839435
+        "importance": 0.004854845843408997
     },
     {
-        "feature": "cristina narbona",
-        "importance": 0.003780245188823915
+        "feature": "narbona",
+        "importance": 0.004797248748951012
     },
     {
-        "feature": "erc",
-        "importance": 0.00376355481102931
+        "feature": "eaj pnv",
+        "importance": 0.004442197471374779
+    },
+    {
+        "feature": "cristina",
+        "importance": 0.004324738316461326
+    },
+    {
+        "feature": "vox",
+        "importance": 0.004156262224706541
+    },
+    {
+        "feature": "coalición",
+        "importance": 0.004079635793944434
     }
 ]

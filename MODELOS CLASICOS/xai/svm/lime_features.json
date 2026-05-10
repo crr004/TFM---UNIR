@@ -1,62 +1,66 @@
-[
-    {
-        "feature": "EQUO",
-        "weight": -0.09679245869553538
-    },
-    {
-        "feature": "per",
-        "weight": -0.05801635242103305
-    },
-    {
-        "feature": "Narbona",
-        "weight": -0.041566509290155186
-    },
-    {
-        "feature": "vers",
-        "weight": -0.03427865514407945
-    },
-    {
-        "feature": "Iniciativa",
-        "weight": 0.02587839591230666
-    },
-    {
-        "feature": "Cristina",
-        "weight": -0.025517615797412154
-    },
-    {
-        "feature": "Canaria",
-        "weight": -0.012473290215027105
-    },
-    {
-        "feature": "junto",
-        "weight": 0.007766872182347504
-    },
-    {
-        "feature": "holgura",
-        "weight": 0.007557271218730154
-    },
-    {
-        "feature": "Coalición",
-        "weight": -0.006897823131652232
-    },
-    {
-        "feature": "ultraderecha",
-        "weight": 0.00677655358248682
-    },
-    {
-        "feature": "Congreso",
-        "weight": 0.004794006256917692
-    },
-    {
-        "feature": "Unidas",
-        "weight": 0.004028449050714833
-    },
-    {
-        "feature": "gana",
-        "weight": -0.003996939523745798
-    },
-    {
-        "feature": "con",
-        "weight": -0.0036978697232021005
-    }
-]
+{
+    "original_text": "Carlos Prieto califica de 'inquietante' el acercamiento de Cs al EQUO y Aguado contraataca con la afinidad entre Iniciativa vers per Catalunya y Coalición Canaria Al exdirigente del Iniciativa vers per Catalunya y actual consejero de Transportes del gobierno regional, Antonio de la Torre, le resulta inquietante que el Iniciativa vers per Catalunya se parezca cada día más a Coalición Canaria.",
+    "processed_text": "carlos prieto calificar inquietante acercamiento equo aguado contraataco afinidad iniciativo vers per catalunya coalición canario exdirigente iniciativo vers per catalunya actual consejero transporte gobierno regional antonio torre resultar inquietante iniciativo vers per catalunya parecer coalición canario",
+    "features": [
+        {
+            "feature": "per",
+            "weight": -0.09690429496857868
+        },
+        {
+            "feature": "EQUO",
+            "weight": -0.07981497770899211
+        },
+        {
+            "feature": "Prieto",
+            "weight": -0.05659795374176259
+        },
+        {
+            "feature": "vers",
+            "weight": -0.05159887136534517
+        },
+        {
+            "feature": "Iniciativa",
+            "weight": 0.0347707655741153
+        },
+        {
+            "feature": "Carlos",
+            "weight": -0.03171917037759083
+        },
+        {
+            "feature": "Antonio",
+            "weight": -0.01968296996334881
+        },
+        {
+            "feature": "regional",
+            "weight": 0.016777772821863084
+        },
+        {
+            "feature": "Coalición",
+            "weight": -0.015515339628335546
+        },
+        {
+            "feature": "exdirigente",
+            "weight": 0.012441534419501278
+        },
+        {
+            "feature": "Canaria",
+            "weight": -0.012392680980764174
+        },
+        {
+            "feature": "gobierno",
+            "weight": 0.009489911957091632
+        },
+        {
+            "feature": "afinidad",
+            "weight": 0.007280090461181408
+        },
+        {
+            "feature": "Aguado",
+            "weight": 0.004841554800910919
+        },
+        {
+            "feature": "Catalunya",
+            "weight": -0.004639966827378596
+        }
+    ]
+}

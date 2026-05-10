@@ -1,66 +1,66 @@
 {
-    "original_text": "Piden a Pedro Sánchez comparecer en el Congreso por los casos de policías infiltrados Más País, Compromís, ERC, JxCat, EH Bildu, BNG y la CUP han presentado una solicitud conjunta para que el jefe del Ejecutivo dé explicaciones sobre los casos de agentes encubiertos destapados por el medio La Directa.",
-    "processed_text": "pedir pedro sánchez comparecer congreso caso policía infiltrado país compromís erc jxcat eh bildu bng cup presentar solicitud conjunto jefe ejecutivo dar explicación caso agente encubierto destapado directa",
+    "original_text": "ERC y el PDeCAT siguen reacios a apoyar los Presupuestos, que contemplan 2.251 millones en inversión para Catalunya Las formaciones independentistas dejan la puerta abierta a presentar su propia enmienda a la totalidad del proyecto del Gobierno de Sánchez",
+    "processed_text": "erc pdecat seguir reacio apoyar presupuesto contemplar numero millón inversión catalunya formación independentista dejar puerta abierto presentar enmienda totalidad proyecto gobierno sánchez",
     "features": [
         {
             "feature": "ERC",
-            "weight": 0.41364537295979203
-        },
-        {
-            "feature": "Bildu",
-            "weight": 0.2975073982763491
-        },
-        {
-            "feature": "BNG",
-            "weight": -0.27214950479897726
-        },
-        {
-            "feature": "Pedro",
-            "weight": -0.17148483774761722
-        },
-        {
-            "feature": "Compromís",
-            "weight": 0.1518689909795698
+            "weight": 0.09805088344073772
         },
         {
             "feature": "Sánchez",
-            "weight": -0.051939676626693264
+            "weight": 0.09122523986352819
         },
         {
-            "feature": "País",
-            "weight": 0.026437681013450922
+            "feature": "2",
+            "weight": -0.0035865964155978327
         },
         {
-            "feature": "EH",
-            "weight": 0.021101136173062814
+            "feature": "contemplan",
+            "weight": 0.003281361283953657
         },
         {
-            "feature": "sobre",
-            "weight": 0.019665017876896007
+            "feature": "inversión",
+            "weight": -0.003048387583884316
         },
         {
-            "feature": "comparecer",
-            "weight": 0.017725991968321
+            "feature": "a",
+            "weight": -0.0026641063372853163
         },
         {
-            "feature": "presentado",
-            "weight": 0.011717254216997923
+            "feature": "en",
+            "weight": 0.0023802272951901327
         },
         {
-            "feature": "jefe",
-            "weight": 0.010978036606294225
+            "feature": "de",
+            "weight": 0.002244410124433638
         },
         {
-            "feature": "solicitud",
-            "weight": 0.009886313251518024
+            "feature": "PDeCAT",
+            "weight": 0.0021709444578286
         },
         {
-            "feature": "dé",
-            "weight": -0.009883042779949761
+            "feature": "Catalunya",
+            "weight": -0.002002859955543815
         },
         {
-            "feature": "una",
-            "weight": -0.0076960273942269335
+            "feature": "abierta",
+            "weight": -0.0018554944786052007
+        },
+        {
+            "feature": "reacios",
+            "weight": 0.0017144890745914264
+        },
+        {
+            "feature": "la",
+            "weight": -0.0017143560918624755
+        },
+        {
+            "feature": "millones",
+            "weight": 0.00165234379456253
+        },
+        {
+            "feature": "del",
+            "weight": 0.001633207745220142
         }
     ]
 }

@@ -1,66 +1,66 @@
 {
-    "original_text": "Cosidó rechazó un contrato de 9,5 millones de Defensa con una empresa que dirigió Morenés PP acusa al exministro de Defensa, Pedro Morenés, de favorecer a la empresa MBDA de la que él había sido presidente y a la que su predecesora, María Dolores de Jordi Xuclà, había contratado por 9,5 millones de euros.",
-    "processed_text": "cosidar rechazar contrato numero millón defensa empresa dirigir morenés acusar exministro defensa pedro morenés favorecer empresa mbda presidente predecesora maría dolor jordi xucl contratar numero millón euros",
+    "original_text": "Aprueban decreto para subir $50 en 2018 y $50 en 2019 a 43,514 maestros “Cien ya”, decían los carteles de los maestros sindicalizados, en la Asamblea. / Óscar Machón La Asamblea Legislativa aprobó ayer una reforma a la Ley de Salarios de 2018 que permite un aumento gradual de $50 mensuales al salario de 43,514 maestros en 2018 y de otros $50 en 2019. Para el caso de los empleados administrativos y técnicos del Ministerio de Educación, el aumento es $30 en 2018 y de $30 en 2019. Están excluidas, las personas con plazas con sobresueldo, horas clase y a los titulares de Educación. La iniciativa de ley fue presentada el pasado 7 de febrero a la Asamblea Legislativa por el ministro de Educación, Carlos Canjura, e ingresó ayer a sesión plenaria. La diputada del FMLN Lorena Peña pidió que el decreto se aprobara ayer mismo y, luego de una reunión de la Comisión de Hacienda, se aprobó con dispensa de trámite. Este decreto tendrá efecto retroactivo. El monto de $29,450,100 anual que implicará para el Estado el aumento del salario se cubrirá con “asignaciones disponibles del ramo de educación”. “Es un incremento no suficiente, pero es el incremento que en las condiciones actuales podemos hacer”, dijo. La diputada de ARENA Lucía de León llamó al gobierno a cumpla con el compromiso de que la segunda parte del aumento se desarrolle en 2019. Pedían $100 ARENA, GANA, PDC y PCN apoyaron una propuesta del Sindicato Agremiado Nacional de Educadores Salvadoreños 21 de junio del Ministerio de Eduación (Siandes) y del Sindicato de Maestras y Maestros de la Educación Pública de El Salvador (Simeduco) para aprobar un solo aumento anual de $100. Pidieron una pieza de correspondencia pero no tuvo respaldo del FMLN. Siandes, que apoyó la iniciativa del gobierno, criticó que ARENA pretendía boicotear el incremento. Israel Montano, secretario general de la Asociación Nacional de Educadores Salvadoreños (Andes 21 de Junio), dijo que ese monto habían acordado luego de negociaciones con el gobierno. Montano dijo que si se subía a $100 en 2018, el gobierno debía desembolsar $60 millones.",
+    "processed_text": "apruer decreto subir numero numero numero numero numero maestro numero decir cartel maestro sindicalizado asamblea óscar machón asamblea legislativa aprobar ayer reforma ley salario numero permitir aumento gradual numero mensual salario numero maestro numero numero numero caso empleado administrativo técnico ministerio educación aumento numero numero numero numero excluido persona plaza sobresueldo hora clase titular educación iniciativa ley presentar numero febrero asamblea legislativa ministro educación carlos canjura ingresar ayer sesión plenario diputada fmln lorena peña pedir decreto aprobar ayer reunión comisión hacienda aprobar dispensa trámite decreto efecto retroactivo monto numero numero anual implicar aumento salario cubrir asignación disponible ramo educación incremento no suficiente incremento condición actual diputada arena lucir león llamar gobierno cumplir compromiso aumento desarrollar numero pedir numero arena ganar pdc pcn apoyar propuesta sindicato agremiado nacional educador salvadoreño numero junio ministerio eduación siand sindicato maestra maestro educación público salvador simeduco aprobar aumento anual numero pedir pieza correspondencia no respaldo fmln siand apoyar iniciativa gobierno criticar arena pretender boicotear incremento israel montano secretario general asociación nacional educador salvadoreño andes numero junio monto acordar negociación gobierno montano subir numero numero gobierno deber desembolsar numero millón",
     "features": [
         {
-            "feature": "Jordi",
-            "weight": -0.1966884200398279
+            "feature": "ayer",
+            "weight": -0.04915717133420806
         },
         {
-            "feature": "Pedro",
-            "weight": -0.13295213502102593
+            "feature": "ARENA",
+            "weight": -0.04673619684832302
         },
         {
-            "feature": "Morenés",
-            "weight": 0.12483206881283548
+            "feature": "Carlos",
+            "weight": -0.022729000209834906
         },
         {
-            "feature": "María",
-            "weight": -0.09015600824220445
+            "feature": "Ministerio",
+            "weight": 0.016748338984807702
         },
         {
-            "feature": "él",
-            "weight": 0.05620279411756577
+            "feature": "FMLN",
+            "weight": -0.01648004784513037
         },
         {
-            "feature": "Defensa",
-            "weight": -0.05177251394814581
+            "feature": "anual",
+            "weight": 0.013449642646576231
         },
         {
-            "feature": "exministro",
-            "weight": 0.02814853822294805
+            "feature": "diputada",
+            "weight": -0.011859962660606621
         },
         {
-            "feature": "presidente",
-            "weight": -0.027445030768010477
+            "feature": "monto",
+            "weight": -0.011781291208262634
         },
         {
-            "feature": "favorecer",
-            "weight": -0.02453547795383487
+            "feature": "Salvador",
+            "weight": -0.01151651624585219
         },
         {
-            "feature": "acusa",
-            "weight": 0.02405961737879508
+            "feature": "pieza",
+            "weight": 0.011088998667336923
         },
         {
-            "feature": "contratado",
-            "weight": 0.021077844230346966
+            "feature": "retroactivo",
+            "weight": 0.01069688156195663
         },
         {
-            "feature": "euros",
-            "weight": 0.02002048999214986
+            "feature": "Sindicato",
+            "weight": 0.010044461535675082
         },
         {
-            "feature": "contrato",
-            "weight": -0.01617157003339054
+            "feature": "GANA",
+            "weight": -0.006517657403122581
         },
         {
-            "feature": "Cosidó",
-            "weight": -0.01525418153921683
+            "feature": "salario",
+            "weight": -0.006103679288293839
         },
         {
-            "feature": "Dolores",
-            "weight": 0.014412215574068446
+            "feature": "Nacional",
+            "weight": -0.005955586614853079
         }
     ]
 }

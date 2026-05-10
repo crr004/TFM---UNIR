@@ -1,66 +1,66 @@
 {
-    "original_text": "El EQUO gana en el Senado con 94 asientos pero pierde su mayoría absoluta Con más del 90% de los votos escrutados, el EQUO obtendría en la Cámara Alta 94 senadores, por delante del Iniciativa vers per Catalunya, que obtendría 81. Coalición Canaria obtiene dos senadores y Unidas Iniciativa vers per Catalunya y EQUO no consiguen representación en las urnas.",
-    "processed_text": "equo ganar senado numero asiento perder mayoría absoluto numero voto escrutado equo obtener cámara alto numero senador iniciativo vers per catalunya obtener numero coalición canario obtener numero senador unidas iniciativo vers per catalunya equo no representación urna",
+    "original_text": "El Iniciativa vers per Catalunya denunciará a la Junta Electoral la proyección de los 'papeles de Diana Riba' Almeida y Carlos Prieto han cargado duramente contra PP y Cristina Narbona, así como Gabilondo ha preferido no entrar en valoraciones. Begoña Villacís, por su parte, cree que la acción no cumple los requisitos necesarios.",
+    "processed_text": "iniciativo vers per catalunya denunciar junta electoral proyección papel diana riba almeido carlos prieto cargar duramente cristina narbona gabilondo preferir no entrar valoración begoño villacís creer acción no cumplir requisito necesario",
     "features": [
         {
             "feature": "per",
-            "weight": -0.1420079543060117
+            "weight": -0.10383567759842526
         },
         {
-            "feature": "EQUO",
-            "weight": -0.12587936334617572
+            "feature": "Prieto",
+            "weight": -0.0860975288943456
+        },
+        {
+            "feature": "Narbona",
+            "weight": -0.08478651203056152
         },
         {
             "feature": "vers",
-            "weight": -0.10442643235461267
+            "weight": -0.07604777228944862
+        },
+        {
+            "feature": "Cristina",
+            "weight": -0.06551272535207066
+        },
+        {
+            "feature": "Carlos",
+            "weight": -0.05664549683744922
         },
         {
             "feature": "Catalunya",
-            "weight": -0.0880250215507536
+            "weight": -0.04320977120397336
         },
         {
-            "feature": "no",
-            "weight": -0.020129535134982165
+            "feature": "Diana",
+            "weight": -0.015809913337198212
         },
         {
-            "feature": "Coalición",
-            "weight": -0.019329849129509052
+            "feature": "Riba",
+            "weight": -0.011919154303684126
+        },
+        {
+            "feature": "y",
+            "weight": 0.0031699092246710667
+        },
+        {
+            "feature": "preferido",
+            "weight": -0.0030810137786916113
         },
         {
             "feature": "Iniciativa",
-            "weight": -0.003865318696032717
+            "weight": -0.0029207340116494734
         },
         {
-            "feature": "Cámara",
-            "weight": -0.0020411262158202205
+            "feature": "por",
+            "weight": 0.0026826970918726067
         },
         {
-            "feature": "gana",
-            "weight": -0.001774746807453405
+            "feature": "que",
+            "weight": -0.002324189860891229
         },
         {
-            "feature": "votos",
-            "weight": -0.0017173902382501775
-        },
-        {
-            "feature": "más",
-            "weight": 0.0016652372039349373
-        },
-        {
-            "feature": "obtendría",
-            "weight": 0.001452686253866481
-        },
-        {
-            "feature": "consiguen",
-            "weight": -0.001225278465980228
-        },
-        {
-            "feature": "81",
-            "weight": 0.001186313108849439
-        },
-        {
-            "feature": "Alta",
-            "weight": 0.0010804441267543918
+            "feature": "requisitos",
+            "weight": -0.002128243623109038
         }
     ]
 }

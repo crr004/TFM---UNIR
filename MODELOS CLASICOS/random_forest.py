@@ -1,3 +1,4 @@
+import warnings
 import pandas as pd
 import numpy as np
 import time
@@ -6,13 +7,13 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from sklearn.model_selection import train_test_split, learning_curve
+from sklearn.exceptions import ConvergenceWarning
+
+from sklearn.model_selection import train_test_split
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from sklearn.ensemble import RandomForestClassifier
-
-from sklearn.pipeline import Pipeline
 
 from sklearn.metrics import (
     accuracy_score,
@@ -21,6 +22,7 @@ from sklearn.metrics import (
     f1_score,
     roc_auc_score,
     roc_curve,
+    log_loss,
     classification_report,
     confusion_matrix
 )
@@ -58,11 +60,11 @@ X_text_full = df['full_text']
 y = df['label']
 
 # =========================================================
-# SPLIT 70 / 10 / 20
+# SPLIT 70 / 20 / 10  (train / test / val)
 # =========================================================
 
 # -------------------------
-# 3. TRAIN (70) y TEMP (30)
+# 3. TRAIN (70%) y TEMP (30%)
 # -------------------------
 X_text_train, X_text_temp, \
 X_text_full_train, X_text_full_temp, \
@@ -79,17 +81,19 @@ y_train, y_temp = train_test_split(
 )
 
 # -------------------------
-# 4. VALIDATION (10) y TEST (20)
+# 4. TEST (20%) y VALIDATION (10%)
+#    test_size=1/3 del 30% restante -> test=20%, val=10%
 # -------------------------
-X_text_val, X_text_test, \
-X_text_full_val, X_text_full_test, \
-X_num_val, X_num_test, \
-y_val, y_test = train_test_split(
+X_text_test, X_text_val, \
+X_text_full_test, X_text_full_val, \
+X_num_test, X_num_val, \
+y_test, y_val = train_test_split(
+
     X_text_temp,
     X_text_full_temp,
     X_num_temp,
     y_temp,
-    test_size=2/3,
+    test_size=1/3,
     random_state=42,
     stratify=y_temp
 )
@@ -154,7 +158,7 @@ y_probs_tfidf = model_tfidf.predict_proba(X_test_tfidf)[:, 1]
 # =========================================================
 
 # -------------------------
-# 10. Métricas principales
+# 10. Métricas TEST
 # -------------------------
 acc_tfidf = accuracy_score(y_test, y_pred_tfidf)
 
@@ -201,21 +205,31 @@ conf_matrix_tfidf = confusion_matrix(
 )
 
 # -------------------------
-# 14. Train
+# 14. Métricas TRAIN
 # -------------------------
 y_train_pred_tfidf = model_tfidf.predict(X_train_tfidf)
 
-train_f1_tfidf = f1_score(
-    y_train,
-    y_train_pred_tfidf
-)
+train_acc_tfidf  = accuracy_score(y_train, y_train_pred_tfidf)
+train_prec_tfidf = precision_score(y_train, y_train_pred_tfidf)
+train_rec_tfidf  = recall_score(y_train, y_train_pred_tfidf)
+train_f1_tfidf   = f1_score(y_train, y_train_pred_tfidf)
+
+# -------------------------
+# 15. Métricas VALIDACIÓN
+# -------------------------
+y_val_pred_tfidf = model_tfidf.predict(X_val_tfidf)
+
+val_acc_tfidf  = accuracy_score(y_val, y_val_pred_tfidf)
+val_prec_tfidf = precision_score(y_val, y_val_pred_tfidf)
+val_rec_tfidf  = recall_score(y_val, y_val_pred_tfidf)
+val_f1_tfidf   = f1_score(y_val, y_val_pred_tfidf)
 
 # =========================================================
 # MODELO 2: TF-IDF + FEATURES
 # =========================================================
 
 # -------------------------
-# 15. Normalización
+# 16. Normalización
 # -------------------------
 scaler = StandardScaler()
 
@@ -227,16 +241,16 @@ X_val_num = scaler.transform(X_num_val)
 X_test_num = scaler.transform(X_num_test)
 
 # -------------------------
-# 16. Combinar
+# 17. Combinar
 # -------------------------
-X_train_final = hstack([X_train_tfidf, X_train_num])
+X_train_final = hstack([X_train_tfidf, X_train_num]).tocsr()
 
-X_val_final = hstack([X_val_tfidf, X_val_num])
+X_val_final = hstack([X_val_tfidf, X_val_num]).tocsr()
 
-X_test_final = hstack([X_test_tfidf, X_test_num])
+X_test_final = hstack([X_test_tfidf, X_test_num]).tocsr()
 
 # -------------------------
-# 17. Modelo Full
+# 18. Modelo Full
 # -------------------------
 model_full = RandomForestClassifier(
     n_estimators=300,
@@ -248,7 +262,7 @@ model_full = RandomForestClassifier(
 )
 
 # -------------------------
-# 18. Entrenamiento
+# 19. Entrenamiento
 # -------------------------
 start = time.time()
 
@@ -257,12 +271,12 @@ model_full.fit(X_train_final, y_train)
 time_full = time.time() - start
 
 # -------------------------
-# 19. Predicción TEST
+# 20. Predicción TEST
 # -------------------------
 y_pred_full = model_full.predict(X_test_final)
 
 # -------------------------
-# 20. Probabilidades TEST
+# 21. Probabilidades TEST
 # -------------------------
 y_probs_full = model_full.predict_proba(X_test_final)[:, 1]
 
@@ -271,7 +285,7 @@ y_probs_full = model_full.predict_proba(X_test_final)[:, 1]
 # =========================================================
 
 # -------------------------
-# 21. Métricas principales
+# 22. Métricas TEST
 # -------------------------
 acc_full = accuracy_score(y_test, y_pred_full)
 
@@ -294,7 +308,7 @@ weighted_f1_full = f1_score(
 )
 
 # -------------------------
-# 22. ROC-AUC
+# 23. ROC-AUC
 # -------------------------
 roc_auc_full = roc_auc_score(
     y_test,
@@ -302,7 +316,7 @@ roc_auc_full = roc_auc_score(
 )
 
 # -------------------------
-# 23. Classification Report
+# 24. Classification Report
 # -------------------------
 class_report_full = classification_report(
     y_test,
@@ -310,7 +324,7 @@ class_report_full = classification_report(
 )
 
 # -------------------------
-# 24. Confusion Matrix
+# 25. Confusion Matrix
 # -------------------------
 conf_matrix_full = confusion_matrix(
     y_test,
@@ -318,21 +332,31 @@ conf_matrix_full = confusion_matrix(
 )
 
 # -------------------------
-# 25. Train
+# 26. Métricas TRAIN
 # -------------------------
 y_train_pred_full = model_full.predict(X_train_final)
 
-train_f1_full = f1_score(
-    y_train,
-    y_train_pred_full
-)
+train_acc_full  = accuracy_score(y_train, y_train_pred_full)
+train_prec_full = precision_score(y_train, y_train_pred_full)
+train_rec_full  = recall_score(y_train, y_train_pred_full)
+train_f1_full   = f1_score(y_train, y_train_pred_full)
+
+# -------------------------
+# 27. Métricas VALIDACIÓN
+# -------------------------
+y_val_pred_full = model_full.predict(X_val_final)
+
+val_acc_full  = accuracy_score(y_val, y_val_pred_full)
+val_prec_full = precision_score(y_val, y_val_pred_full)
+val_rec_full  = recall_score(y_val, y_val_pred_full)
+val_f1_full   = f1_score(y_val, y_val_pred_full)
 
 # =========================================================
 # RESULTADOS
 # =========================================================
 
 # -------------------------
-# 26. Resultados
+# 28. Resultados
 # -------------------------
 print("\n===== RANDOM FOREST: COMPARACIÓN =====")
 
@@ -345,7 +369,8 @@ print(f"F1: {f1_tfidf:.4f}")
 print(f"Macro F1: {macro_f1_tfidf:.4f}")
 print(f"Weighted F1: {weighted_f1_tfidf:.4f}")
 print(f"ROC-AUC: {roc_auc_tfidf:.4f}")
-print(f"F1 Train: {train_f1_tfidf:.4f}")
+print(f"\nTrain  -> Acc: {train_acc_tfidf:.4f}  Prec: {train_prec_tfidf:.4f}  Rec: {train_rec_tfidf:.4f}  F1: {train_f1_tfidf:.4f}")
+print(f"Val    -> Acc: {val_acc_tfidf:.4f}  Prec: {val_prec_tfidf:.4f}  Rec: {val_rec_tfidf:.4f}  F1: {val_f1_tfidf:.4f}")
 
 print("\nClassification Report:")
 print(class_report_tfidf)
@@ -362,7 +387,8 @@ print(f"F1: {f1_full:.4f}")
 print(f"Macro F1: {macro_f1_full:.4f}")
 print(f"Weighted F1: {weighted_f1_full:.4f}")
 print(f"ROC-AUC: {roc_auc_full:.4f}")
-print(f"F1 Train: {train_f1_full:.4f}")
+print(f"\nTrain  -> Acc: {train_acc_full:.4f}  Prec: {train_prec_full:.4f}  Rec: {train_rec_full:.4f}  F1: {train_f1_full:.4f}")
+print(f"Val    -> Acc: {val_acc_full:.4f}  Prec: {val_prec_full:.4f}  Rec: {val_rec_full:.4f}  F1: {val_f1_full:.4f}")
 
 print("\nClassification Report:")
 print(class_report_full)
@@ -370,56 +396,20 @@ print(class_report_full)
 print("\nConfusion Matrix:")
 print(conf_matrix_full)
 
-# =========================================================
-# DIFERENCIAS
-# =========================================================
-
 # -------------------------
-# 27. Diferencias
+# 29. Diferencias
 # -------------------------
-print("\n--- DIFERENCIA ---")
+print("\n--- DIFERENCIA (Full - TF-IDF) ---")
 print(f"Δ F1: {f1_full - f1_tfidf:.4f}")
 print(f"Δ Precision: {prec_full - prec_tfidf:.4f}")
 print(f"Δ Recall: {rec_full - rec_tfidf:.4f}")
-
-# =========================================================
-# OVERFITTING
-# =========================================================
-
-# -------------------------
-# 28. Overfitting
-# -------------------------
-print("\n===== OVERFITTING CHECK =====")
-
-print("\n--- SOLO TF-IDF ---")
-print(f"Train F1: {train_f1_tfidf:.4f}")
-print(f"Test F1:  {f1_tfidf:.4f}")
-
-print("\n--- TF-IDF + FEATURES ---")
-print(f"Train F1: {train_f1_full:.4f}")
-print(f"Test F1:  {f1_full:.4f}")
-
-# -------------------------
-# 29. Gap
-# -------------------------
-gap_tfidf = train_f1_tfidf - f1_tfidf
-
-gap_full = train_f1_full - f1_full
-
-print("\n===== GAP TRAIN vs TEST =====")
-
-print("\n--- SOLO TF-IDF ---")
-print(f"Gap F1: {gap_tfidf:.4f}")
-
-print("\n--- TF-IDF + FEATURES ---")
-print(f"Gap F1: {gap_full:.4f}")
 
 # =========================================================
 # JSON
 # =========================================================
 
 # -------------------------
-# 30. Diccionario resultados
+# 30. Guardar JSON
 # -------------------------
 results = {
 
@@ -433,19 +423,25 @@ results = {
             "macro_f1_score": round(float(macro_f1_tfidf), 4),
             "weighted_f1_score": round(float(weighted_f1_tfidf), 4),
             "roc_auc": round(float(roc_auc_tfidf), 4)
-
         },
-
-        "train_f1": round(float(train_f1_tfidf), 4),
+        "train_metrics": {
+            "accuracy": round(float(train_acc_tfidf), 4),
+            "precision": round(float(train_prec_tfidf), 4),
+            "recall": round(float(train_rec_tfidf), 4),
+            "f1_score": round(float(train_f1_tfidf), 4)
+        },
+        "val_metrics": {
+            "accuracy": round(float(val_acc_tfidf), 4),
+            "precision": round(float(val_prec_tfidf), 4),
+            "recall": round(float(val_rec_tfidf), 4),
+            "f1_score": round(float(val_f1_tfidf), 4)
+        },
         "confusion_matrix": conf_matrix_tfidf.tolist(),
         "classification_report": class_report_tfidf
-
     },
 
     "random_forest_tfidf_features": {
-
         "training_time_seconds": round(float(time_full), 4),
-
         "metrics": {
             "accuracy": round(float(acc_full), 4),
             "precision": round(float(prec_full), 4),
@@ -454,20 +450,25 @@ results = {
             "macro_f1_score": round(float(macro_f1_full), 4),
             "weighted_f1_score": round(float(weighted_f1_full), 4),
             "roc_auc": round(float(roc_auc_full), 4)
-
         },
-
-        "train_f1": round(float(train_f1_full), 4),
+        "train_metrics": {
+            "accuracy": round(float(train_acc_full), 4),
+            "precision": round(float(train_prec_full), 4),
+            "recall": round(float(train_rec_full), 4),
+            "f1_score": round(float(train_f1_full), 4)
+        },
+        "val_metrics": {
+            "accuracy": round(float(val_acc_full), 4),
+            "precision": round(float(val_prec_full), 4),
+            "recall": round(float(val_rec_full), 4),
+            "f1_score": round(float(val_f1_full), 4)
+        },
         "confusion_matrix": conf_matrix_full.tolist(),
         "classification_report": class_report_full
-
     }
 
 }
 
-# -------------------------
-# 31. Guardar JSON
-# -------------------------
 with open("random_forest_results.json", "w", encoding="utf-8") as f:
 
     json.dump(
@@ -481,7 +482,7 @@ print("\nResultados guardados en:")
 print("random_forest_results.json")
 
 # =========================================================
-# 32. GRÁFICAS DE EVALUACIÓN
+# GRÁFICAS DE EVALUACIÓN
 # =========================================================
 
 print("\n================================================")
@@ -490,96 +491,72 @@ print("================================================")
 
 os.makedirs("graficas/random_forest", exist_ok=True)
 
-# -------------------------
-# Pipeline para learning curves (texto)
-# -------------------------
-pipeline_lc = Pipeline([
+# =========================================================
+# 31. Curvas de convergencia con n_estimators (modelo full)
+# =========================================================
+# warm_start=True permite añadir árboles incrementalmente sin reentrenar
+# n_estimators es el equivalente a "epochs" en Random Forest
 
-    ("tfidf", TfidfVectorizer(
-        max_features=15000,
-        ngram_range=(1, 2),
-        min_df=5,
-        max_df=0.85
-    )),
+tree_checkpoints = [10, 25, 50, 75, 100, 150, 200, 250, 300]
 
-    ("clf", RandomForestClassifier(
-        n_estimators=300,
-        max_depth=25,
-        min_samples_split=5,
-        min_samples_leaf=2,
-        n_jobs=-1,
-        random_state=42
-    ))
+conv_train_losses     = []
+conv_val_losses       = []
+conv_train_precisions = []
+conv_val_precisions   = []
 
-])
-
-# -------------------------
-# 32a. Learning Curve - F1
-# -------------------------
-train_sizes, train_scores, test_scores = learning_curve(
-
-    pipeline_lc,
-
-    X_text_train,
-    y_train,
-
-    cv=5,
-
-    scoring='f1',
+conv_rf = RandomForestClassifier(
+    n_estimators=1,
+    max_depth=25,
+    min_samples_split=5,
+    min_samples_leaf=2,
     n_jobs=-1,
-    train_sizes=np.linspace(0.1, 1.0, 5)
+    random_state=42,
+    warm_start=True
 )
 
-train_mean = train_scores.mean(axis=1)
-test_mean = test_scores.mean(axis=1)
+for n_trees in tree_checkpoints:
 
+    conv_rf.set_params(n_estimators=n_trees)
+    conv_rf.fit(X_train_final, y_train)
+
+    tp = conv_rf.predict_proba(X_train_final)
+    vp = conv_rf.predict_proba(X_val_final)
+
+    conv_train_losses.append(log_loss(y_train, tp))
+    conv_val_losses.append(log_loss(y_val, vp))
+
+    conv_train_precisions.append(
+        precision_score(y_train, conv_rf.predict(X_train_final))
+    )
+    conv_val_precisions.append(
+        precision_score(y_val, conv_rf.predict(X_val_final))
+    )
+
+# Loss curve
 plt.figure(figsize=(8, 6))
-
-plt.plot(train_sizes, train_mean, label="Train F1")
-plt.plot(train_sizes, test_mean, label="Validation F1")
-
-plt.xlabel("Tamaño del conjunto de entrenamiento")
-plt.ylabel("F1-score")
-plt.title("Learning Curve - F1 - Random Forest")
+plt.plot(tree_checkpoints, conv_train_losses, marker='o', label="Train Loss")
+plt.plot(tree_checkpoints, conv_val_losses,   marker='o', label="Validación Loss")
+plt.xlabel("Número de árboles (n_estimators)")
+plt.ylabel("Log Loss")
+plt.title("Curva de Aprendizaje - Loss - Random Forest")
 plt.legend()
 plt.grid()
 plt.tight_layout()
 plt.savefig(
-    "graficas/random_forest/learning_curve_f1.png",
+    "graficas/random_forest/learning_curve_loss.png",
     bbox_inches='tight'
 )
 plt.close()
 
-print("[OK] learning_curve_f1.png")
+print("[OK] learning_curve_loss.png")
 
-# -------------------------
-# 32b. Learning Curve - Precisión
-# -------------------------
-train_sizes_p, train_scores_p, test_scores_p = learning_curve(
-
-    pipeline_lc,
-
-    X_text_train,
-    y_train,
-
-    cv=5,
-
-    scoring='precision',
-    n_jobs=-1,
-    train_sizes=np.linspace(0.1, 1.0, 5)
-)
-
-train_mean_p = train_scores_p.mean(axis=1)
-test_mean_p = test_scores_p.mean(axis=1)
-
+# Precision curve
 plt.figure(figsize=(8, 6))
-
-plt.plot(train_sizes_p, train_mean_p, label="Train Precision")
-plt.plot(train_sizes_p, test_mean_p, label="Validation Precision")
-
-plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.plot(tree_checkpoints, conv_train_precisions, marker='o', label="Train Precision")
+plt.plot(tree_checkpoints, conv_val_precisions,   marker='o', label="Validación Precision")
+plt.xlabel("Número de árboles (n_estimators)")
 plt.ylabel("Precision")
-plt.title("Learning Curve - Precisión - Random Forest")
+plt.title("Curva de Aprendizaje - Precisión - Random Forest")
 plt.legend()
 plt.grid()
 plt.tight_layout()
@@ -592,46 +569,42 @@ plt.close()
 print("[OK] learning_curve_precision.png")
 
 # -------------------------
-# 32c. Learning Curve - Loss
+# 32. Barras: métricas Train / Validación / Test (modelo full)
 # -------------------------
-train_sizes_l, train_scores_l, test_scores_l = learning_curve(
+metrics_labels = ['Accuracy', 'Precision', 'Recall', 'F1-score']
 
-    pipeline_lc,
+train_values = [train_acc_full, train_prec_full, train_rec_full, train_f1_full]
+val_values   = [val_acc_full,   val_prec_full,   val_rec_full,   val_f1_full]
+test_values  = [acc_full,       prec_full,       rec_full,       f1_full]
 
-    X_text_train,
-    y_train,
+x = np.arange(len(metrics_labels))
+width = 0.25
 
-    cv=5,
+fig, ax = plt.subplots(figsize=(9, 6))
 
-    scoring='neg_log_loss',
-    n_jobs=-1,
-    train_sizes=np.linspace(0.1, 1.0, 5)
-)
+ax.bar(x - width, train_values, width, label='Train')
+ax.bar(x,         val_values,   width, label='Validación')
+ax.bar(x + width, test_values,  width, label='Test')
 
-train_mean_l = -train_scores_l.mean(axis=1)
-test_mean_l = -test_scores_l.mean(axis=1)
-
-plt.figure(figsize=(8, 6))
-
-plt.plot(train_sizes_l, train_mean_l, label="Train Loss")
-plt.plot(train_sizes_l, test_mean_l, label="Validation Loss")
-
-plt.xlabel("Tamaño del conjunto de entrenamiento")
-plt.ylabel("Log Loss")
-plt.title("Learning Curve - Loss - Random Forest")
-plt.legend()
-plt.grid()
+ax.set_xlabel("Métrica")
+ax.set_ylabel("Valor")
+ax.set_title("Métricas Train / Validación / Test - RF TF-IDF + Features")
+ax.set_xticks(x)
+ax.set_xticklabels(metrics_labels)
+ax.set_ylim(0, 1.05)
+ax.legend()
+ax.grid(axis='y')
 plt.tight_layout()
 plt.savefig(
-    "graficas/random_forest/learning_curve_loss.png",
+    "graficas/random_forest/metrics_comparison.png",
     bbox_inches='tight'
 )
 plt.close()
 
-print("[OK] learning_curve_loss.png")
+print("[OK] metrics_comparison.png")
 
 # -------------------------
-# 32d. Matriz de Confusión - Solo TF-IDF
+# 33. Matriz de Confusión - Solo TF-IDF
 # -------------------------
 plt.figure(figsize=(7, 5))
 
@@ -657,7 +630,7 @@ plt.close()
 print("[OK] confusion_matrix_tfidf.png")
 
 # -------------------------
-# 32e. Matriz de Confusión - TF-IDF + Features
+# 34. Matriz de Confusión - TF-IDF + Features
 # -------------------------
 plt.figure(figsize=(7, 5))
 
@@ -683,7 +656,7 @@ plt.close()
 print("[OK] confusion_matrix_full.png")
 
 # -------------------------
-# 32f. Curva ROC-AUC - Solo TF-IDF
+# 35. Curva ROC-AUC - Solo TF-IDF
 # -------------------------
 fpr_t, tpr_t, _ = roc_curve(y_test, y_probs_tfidf)
 
@@ -707,7 +680,7 @@ plt.close()
 print("[OK] roc_auc_curve_tfidf.png")
 
 # -------------------------
-# 32g. Curva ROC-AUC - TF-IDF + Features
+# 36. Curva ROC-AUC - TF-IDF + Features
 # -------------------------
 fpr_f, tpr_f, _ = roc_curve(y_test, y_probs_full)
 
@@ -733,11 +706,8 @@ print("[OK] roc_auc_curve_full.png")
 print("\nGráficas guardadas en: graficas/random_forest/")
 
 # =========================================================
-# 33. EXPLICABILIDAD (SHAP + LIME)
+# 37. EXPLICABILIDAD (SHAP + LIME)
 # =========================================================
-
-# INSTALAR:
-# pip install shap lime
 
 import shap
 
@@ -758,13 +728,6 @@ tfidf_feature_names = vectorizer.get_feature_names_out()
 all_feature_names = list(tfidf_feature_names) + numeric_features
 
 # =========================================================
-# CONVERTIR A CSR
-# =========================================================
-
-X_train_final = X_train_final.tocsr()
-X_test_final = X_test_final.tocsr()
-
-# =========================================================
 # SHAP
 # =========================================================
 
@@ -772,23 +735,11 @@ print("\n================================================")
 print("GENERANDO EXPLICACIONES SHAP")
 print("================================================")
 
-# =========================================================
-# SAMPLE SHAP
-# =========================================================
-
 sample_size = 200
 
 X_shap_sample = X_test_final[:sample_size].toarray()
 
-# =========================================================
-# SHAP EXPLAINER
-# =========================================================
-
 explainer = shap.TreeExplainer(model_full)
-
-# =========================================================
-# SHAP VALUES
-# =========================================================
 
 shap_values = explainer.shap_values(X_shap_sample)
 
@@ -801,10 +752,9 @@ else:
 
     shap_values_plot = shap_values
 
-# =========================================================
+# -------------------------
 # SHAP SUMMARY PLOT
-# =========================================================
-
+# -------------------------
 plt.figure()
 
 shap.summary_plot(
@@ -826,10 +776,9 @@ plt.close()
 
 print("[OK] shap_summary_plot.png")
 
-# =========================================================
+# -------------------------
 # SHAP BAR PLOT
-# =========================================================
-
+# -------------------------
 plt.figure()
 
 shap.summary_plot(
@@ -852,23 +801,20 @@ plt.close()
 
 print("[OK] shap_bar_plot.png")
 
-# =========================================================
+# -------------------------
 # SAMPLE MÁS CONFIADO
-# =========================================================
-
+# -------------------------
 confidence_scores = np.abs(
     y_probs_full[:sample_size] - 0.5
 )
 
 sample_index = np.argmax(confidence_scores)
 
-# =========================================================
+# -------------------------
 # SHAP WATERFALL
-# =========================================================
-
+# -------------------------
 sample_dense = X_shap_sample[sample_index]
 
-# coger SOLO clase FAKE
 sample_shap_values = shap_values_plot[
     sample_index, :, 1
 ]
@@ -896,10 +842,6 @@ plt.close()
 
 print("[OK] shap_waterfall_plot.png")
 
-# =========================================================
-# GUARDAR TEXTO SHAP
-# =========================================================
-
 with open(
     "xai/random_forest/shap_explained_text.txt",
     "w",
@@ -914,10 +856,9 @@ with open(
 
 print("[OK] shap_explained_text.txt")
 
-# =========================================================
+# -------------------------
 # TOP FEATURES JSON
-# =========================================================
-
+# -------------------------
 mean_abs_shap = np.abs(
     shap_values_plot[:, :, 1]
 ).mean(axis=0)
@@ -968,6 +909,14 @@ text_mapping_dict = dict(
 )
 
 # =========================================================
+# VALORES NUMÉRICOS REALES DEL SAMPLE
+# =========================================================
+
+# lime usa sample_index (el más confiado); sus features numéricas
+# se mantienen constantes en cada perturbación de texto
+lime_sample_num = X_test_num[sample_index: sample_index + 1]
+
+# =========================================================
 # FUNCIÓN PREDICT PROBA PARA LIME
 # =========================================================
 
@@ -990,17 +939,13 @@ def predict_proba_lime(texts):
     # TF-IDF
     tfidf = vectorizer.transform(processed_texts)
 
-    # numéricas vacías
-    numeric_zeros = np.zeros(
-        (len(processed_texts), len(numeric_features))
-    )
+    # repetir los valores numéricos reales del sample para cada perturbación
+    n = len(processed_texts)
+    numeric_repeated = np.tile(lime_sample_num, (n, 1))
 
     # combinar
-    final = hstack([tfidf, numeric_zeros])
+    final = hstack([tfidf, numeric_repeated]).tocsr()
 
-    final = final.tocsr()
-
-    # probabilidades
     probs = model_full.predict_proba(final)
 
     return probs
