@@ -4,63 +4,63 @@
     "features": [
         {
             "feature": "per",
-            "weight": -0.09690429496857868
+            "weight": -0.10073207536657736
         },
         {
             "feature": "EQUO",
-            "weight": -0.07981497770899211
+            "weight": -0.08194012243645313
         },
         {
             "feature": "Prieto",
-            "weight": -0.05659795374176259
+            "weight": -0.0562651467911206
         },
         {
             "feature": "vers",
-            "weight": -0.05159887136534517
+            "weight": -0.05396625745082646
         },
         {
             "feature": "Iniciativa",
-            "weight": 0.0347707655741153
+            "weight": 0.03306367424420593
         },
         {
             "feature": "Carlos",
-            "weight": -0.03171917037759083
+            "weight": -0.03192396505939428
         },
         {
             "feature": "Antonio",
-            "weight": -0.01968296996334881
-        },
-        {
-            "feature": "regional",
-            "weight": 0.016777772821863084
+            "weight": -0.020409640710199437
         },
         {
             "feature": "Coalición",
-            "weight": -0.015515339628335546
-        },
-        {
-            "feature": "exdirigente",
-            "weight": 0.012441534419501278
-        },
-        {
-            "feature": "Canaria",
-            "weight": -0.012392680980764174
-        },
-        {
-            "feature": "gobierno",
-            "weight": 0.009489911957091632
+            "weight": -0.01615246311759775
         },
         {
             "feature": "afinidad",
-            "weight": 0.007280090461181408
+            "weight": 0.01444849558302755
+        },
+        {
+            "feature": "exdirigente",
+            "weight": 0.013496769305497652
+        },
+        {
+            "feature": "regional",
+            "weight": 0.012755012007070474
+        },
+        {
+            "feature": "Canaria",
+            "weight": -0.011830018383672668
+        },
+        {
+            "feature": "gobierno",
+            "weight": 0.010576998609934557
         },
         {
             "feature": "Aguado",
-            "weight": 0.004841554800910919
+            "weight": 0.006288953187341379
         },
         {
             "feature": "Catalunya",
-            "weight": -0.004639966827378596
+            "weight": -0.005570340675391371
         }
     ]
 }

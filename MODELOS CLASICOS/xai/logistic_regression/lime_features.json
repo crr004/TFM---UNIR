@@ -4,63 +4,63 @@
     "features": [
         {
             "feature": "ayer",
-            "weight": -0.04915717133420806
+            "weight": -0.050694743972583445
         },
         {
             "feature": "ARENA",
-            "weight": -0.04673619684832302
+            "weight": -0.04572593822974095
         },
         {
             "feature": "Carlos",
-            "weight": -0.022729000209834906
-        },
-        {
-            "feature": "Ministerio",
-            "weight": 0.016748338984807702
+            "weight": -0.02355830654357779
         },
         {
             "feature": "FMLN",
-            "weight": -0.01648004784513037
+            "weight": -0.01703032083542056
+        },
+        {
+            "feature": "Ministerio",
+            "weight": 0.015933321470538487
         },
         {
             "feature": "anual",
-            "weight": 0.013449642646576231
+            "weight": 0.013423920679858337
         },
         {
             "feature": "diputada",
-            "weight": -0.011859962660606621
-        },
-        {
-            "feature": "monto",
-            "weight": -0.011781291208262634
-        },
-        {
-            "feature": "Salvador",
-            "weight": -0.01151651624585219
+            "weight": -0.013409237295508894
         },
         {
             "feature": "pieza",
-            "weight": 0.011088998667336923
+            "weight": 0.012888272629134861
         },
         {
-            "feature": "retroactivo",
-            "weight": 0.01069688156195663
+            "feature": "Salvador",
+            "weight": -0.01134639850294892
         },
         {
             "feature": "Sindicato",
-            "weight": 0.010044461535675082
+            "weight": 0.011335173692581073
         },
         {
-            "feature": "GANA",
-            "weight": -0.006517657403122581
+            "feature": "monto",
+            "weight": -0.011127169608064234
         },
         {
-            "feature": "salario",
-            "weight": -0.006103679288293839
+            "feature": "retroactivo",
+            "weight": 0.010151465499865292
         },
         {
             "feature": "Nacional",
-            "weight": -0.005955586614853079
+            "weight": -0.00614671502794131
+        },
+        {
+            "feature": "salario",
+            "weight": -0.005891198954009918
+        },
+        {
+            "feature": "GANA",
+            "weight": -0.0053388445521289195
         }
     ]
 }

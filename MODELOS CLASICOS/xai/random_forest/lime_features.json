@@ -4,63 +4,63 @@
     "features": [
         {
             "feature": "per",
-            "weight": -0.10383567759842526
-        },
-        {
-            "feature": "Prieto",
-            "weight": -0.0860975288943456
+            "weight": -0.10381846846990031
         },
         {
             "feature": "Narbona",
-            "weight": -0.08478651203056152
+            "weight": -0.0883904382785534
+        },
+        {
+            "feature": "Prieto",
+            "weight": -0.08774414253106469
         },
         {
             "feature": "vers",
-            "weight": -0.07604777228944862
+            "weight": -0.07752474062677385
         },
         {
             "feature": "Cristina",
-            "weight": -0.06551272535207066
+            "weight": -0.0668039967640989
         },
         {
             "feature": "Carlos",
-            "weight": -0.05664549683744922
+            "weight": -0.055546093808803716
         },
         {
             "feature": "Catalunya",
-            "weight": -0.04320977120397336
+            "weight": -0.044893996137302404
         },
         {
             "feature": "Diana",
-            "weight": -0.015809913337198212
+            "weight": -0.01847700843005365
         },
         {
             "feature": "Riba",
-            "weight": -0.011919154303684126
+            "weight": -0.010331971931586914
         },
         {
-            "feature": "y",
-            "weight": 0.0031699092246710667
+            "feature": "papeles",
+            "weight": 0.0030994465852664933
         },
         {
-            "feature": "preferido",
-            "weight": -0.0030810137786916113
+            "feature": "cargado",
+            "weight": 0.0026542245361848597
         },
         {
-            "feature": "Iniciativa",
-            "weight": -0.0029207340116494734
+            "feature": "no",
+            "weight": -0.0024879212236868582
         },
         {
-            "feature": "por",
-            "weight": 0.0026826970918726067
+            "feature": "entrar",
+            "weight": 0.0022021962902294915
         },
         {
-            "feature": "que",
-            "weight": -0.002324189860891229
+            "feature": "cree",
+            "weight": -0.001866984475208412
         },
         {
-            "feature": "requisitos",
-            "weight": -0.002128243623109038
+            "feature": "Begoña",
+            "weight": 0.001859730483889654
         }
     ]
 }

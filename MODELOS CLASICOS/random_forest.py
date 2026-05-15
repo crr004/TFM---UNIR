@@ -492,12 +492,13 @@ print("================================================")
 os.makedirs("graficas/random_forest", exist_ok=True)
 
 # =========================================================
-# 31. Curvas de convergencia con n_estimators (modelo full)
+# 31. Curvas de convergencia con n_estimators + early stopping
 # =========================================================
-# warm_start=True permite añadir árboles incrementalmente sin reentrenar
-# n_estimators es el equivalente a "epochs" en Random Forest
+# warm_start=True añade árboles incrementalmente.
+# Early stopping: si el val_loss no mejora durante `patience`
+# checkpoints consecutivos, se para y no se siguen añadiendo árboles.
 
-tree_checkpoints = [10, 25, 50, 75, 100, 150, 200, 250, 300]
+tree_checkpoints = list(range(10, 501, 10))   # 10, 20, ..., 500
 
 conv_train_losses     = []
 conv_val_losses       = []
@@ -514,6 +515,11 @@ conv_rf = RandomForestClassifier(
     warm_start=True
 )
 
+patience       = 5
+best_val_loss  = float('inf')
+no_improve     = 0
+stopped_at     = None
+
 for n_trees in tree_checkpoints:
 
     conv_rf.set_params(n_estimators=n_trees)
@@ -522,8 +528,11 @@ for n_trees in tree_checkpoints:
     tp = conv_rf.predict_proba(X_train_final)
     vp = conv_rf.predict_proba(X_val_final)
 
-    conv_train_losses.append(log_loss(y_train, tp))
-    conv_val_losses.append(log_loss(y_val, vp))
+    t_loss = log_loss(y_train, tp)
+    v_loss = log_loss(y_val,   vp)
+
+    conv_train_losses.append(t_loss)
+    conv_val_losses.append(v_loss)
 
     conv_train_precisions.append(
         precision_score(y_train, conv_rf.predict(X_train_final))
@@ -532,10 +541,24 @@ for n_trees in tree_checkpoints:
         precision_score(y_val, conv_rf.predict(X_val_final))
     )
 
+    if v_loss < best_val_loss:
+        best_val_loss = v_loss
+        no_improve    = 0
+    else:
+        no_improve += 1
+        if no_improve >= patience:
+            stopped_at = n_trees
+            print(f"[Early stopping] n_estimators={n_trees}  best_val_loss={best_val_loss:.4f}")
+            break
+
+actual_checkpoints = tree_checkpoints[:len(conv_train_losses)]
+
 # Loss curve
 plt.figure(figsize=(8, 6))
-plt.plot(tree_checkpoints, conv_train_losses, marker='o', label="Train Loss")
-plt.plot(tree_checkpoints, conv_val_losses,   marker='o', label="Validación Loss")
+plt.plot(actual_checkpoints, conv_train_losses, label="Train Loss")
+plt.plot(actual_checkpoints, conv_val_losses,   label="Validación Loss")
+if stopped_at:
+    plt.axvline(x=stopped_at, color='red', linestyle='--', label=f"Early stop ({stopped_at} árboles)")
 plt.xlabel("Número de árboles (n_estimators)")
 plt.ylabel("Log Loss")
 plt.title("Curva de Aprendizaje - Loss - Random Forest")
@@ -552,8 +575,10 @@ print("[OK] learning_curve_loss.png")
 
 # Precision curve
 plt.figure(figsize=(8, 6))
-plt.plot(tree_checkpoints, conv_train_precisions, marker='o', label="Train Precision")
-plt.plot(tree_checkpoints, conv_val_precisions,   marker='o', label="Validación Precision")
+plt.plot(actual_checkpoints, conv_train_precisions, label="Train Precision")
+plt.plot(actual_checkpoints, conv_val_precisions,   label="Validación Precision")
+if stopped_at:
+    plt.axvline(x=stopped_at, color='red', linestyle='--', label=f"Early stop ({stopped_at} árboles)")
 plt.xlabel("Número de árboles (n_estimators)")
 plt.ylabel("Precision")
 plt.title("Curva de Aprendizaje - Precisión - Random Forest")
@@ -567,6 +592,104 @@ plt.savefig(
 plt.close()
 
 print("[OK] learning_curve_precision.png")
+
+# =========================================================
+# Curvas por tamaño del conjunto de entrenamiento (modelo full)
+# =========================================================
+# El vectorizer y el scaler ya están ajustados sobre el 100% de train.
+# Solo varía cuántas muestras ve el modelo en cada paso.
+
+n_train_total = X_train_final.shape[0]
+lc_fractions  = np.linspace(0.1, 1.0, 10)
+lc_sizes      = [max(50, int(f * n_train_total)) for f in lc_fractions]
+
+lc_train_losses     = []
+lc_val_losses       = []
+lc_train_precisions = []
+lc_val_precisions   = []
+lc_train_f1s        = []
+lc_val_f1s          = []
+
+for n in lc_sizes:
+
+    X_sub = X_train_final[:n]
+    y_sub = y_train.iloc[:n]
+
+    lc_rf = RandomForestClassifier(
+        n_estimators=300,
+        max_depth=25,
+        min_samples_split=5,
+        min_samples_leaf=2,
+        n_jobs=-1,
+        random_state=42
+    )
+    lc_rf.fit(X_sub, y_sub)
+
+    tp = lc_rf.predict_proba(X_sub)
+    vp = lc_rf.predict_proba(X_val_final)
+
+    lc_train_losses.append(log_loss(y_sub, tp))
+    lc_val_losses.append(log_loss(y_val,  vp))
+
+    train_pred_lc = lc_rf.predict(X_sub)
+    val_pred_lc   = lc_rf.predict(X_val_final)
+
+    lc_train_precisions.append(precision_score(y_sub, train_pred_lc))
+    lc_val_precisions.append(precision_score(y_val,   val_pred_lc))
+
+    lc_train_f1s.append(f1_score(y_sub, train_pred_lc))
+    lc_val_f1s.append(f1_score(y_val,   val_pred_lc))
+
+# Loss vs tamaño
+plt.figure(figsize=(8, 6))
+plt.plot(lc_sizes, lc_train_losses, marker='o', label="Train Loss")
+plt.plot(lc_sizes, lc_val_losses,   marker='o', label="Validación Loss")
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("Log Loss")
+plt.title("Curva por Tamaño - Loss - Random Forest")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/random_forest/lc_size_loss.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] lc_size_loss.png")
+
+# Precision vs tamaño
+plt.figure(figsize=(8, 6))
+plt.plot(lc_sizes, lc_train_precisions, marker='o', label="Train Precision")
+plt.plot(lc_sizes, lc_val_precisions,   marker='o', label="Validación Precision")
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("Precision")
+plt.title("Curva por Tamaño - Precisión - Random Forest")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/random_forest/lc_size_precision.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] lc_size_precision.png")
+
+# F1 vs tamaño
+plt.figure(figsize=(8, 6))
+plt.plot(lc_sizes, lc_train_f1s, marker='o', label="Train F1")
+plt.plot(lc_sizes, lc_val_f1s,   marker='o', label="Validación F1")
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("F1-score")
+plt.title("Curva por Tamaño - F1 - Random Forest")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/random_forest/lc_size_f1.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] lc_size_f1.png")
 
 # -------------------------
 # 32. Barras: métricas Train / Validación / Test (modelo full)

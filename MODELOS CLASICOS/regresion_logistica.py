@@ -499,6 +499,104 @@ plt.close()
 
 print("[OK] learning_curve_precision.png")
 
+# =========================================================
+# Curvas por tamaño del conjunto de entrenamiento
+# =========================================================
+# A diferencia de sklearn.learning_curve, aquí se usa el vectorizer y
+# el scaler ya ajustados sobre el 100% de train, por lo que solo varía
+# la cantidad de muestras que ve el modelo en cada paso.
+# Eje X = número de muestras de entrenamiento (10% ... 100% de X_train_final)
+
+n_train_total = X_train_final.shape[0]
+lc_fractions  = np.linspace(0.1, 1.0, 10)
+lc_sizes      = [max(50, int(f * n_train_total)) for f in lc_fractions]
+
+lc_train_losses     = []
+lc_val_losses       = []
+lc_train_precisions = []
+lc_val_precisions   = []
+lc_train_f1s        = []
+lc_val_f1s          = []
+
+for n in lc_sizes:
+
+    X_sub = X_train_final[:n]
+    y_sub = y_train.iloc[:n]
+
+    lc_model = LogisticRegression(
+        max_iter=2000,
+        C=2,
+        class_weight="balanced",
+        solver="liblinear"
+    )
+    lc_model.fit(X_sub, y_sub)
+
+    tp = lc_model.predict_proba(X_sub)
+    vp = lc_model.predict_proba(X_val_final)
+
+    lc_train_losses.append(log_loss(y_sub, tp))
+    lc_val_losses.append(log_loss(y_val,  vp))
+
+    train_pred_lc = (tp[:, 1] >= best_threshold).astype(int)
+    val_pred_lc   = (vp[:, 1] >= best_threshold).astype(int)
+
+    lc_train_precisions.append(precision_score(y_sub, train_pred_lc))
+    lc_val_precisions.append(precision_score(y_val,   val_pred_lc))
+
+    lc_train_f1s.append(f1_score(y_sub, train_pred_lc))
+    lc_val_f1s.append(f1_score(y_val,   val_pred_lc))
+
+# Loss vs tamaño
+plt.figure(figsize=(8, 6))
+plt.plot(lc_sizes, lc_train_losses, marker='o', label="Train Loss")
+plt.plot(lc_sizes, lc_val_losses,   marker='o', label="Validación Loss")
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("Log Loss")
+plt.title("Curva por Tamaño - Loss - Regresión Logística")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/logistic_regression/lc_size_loss.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] lc_size_loss.png")
+
+# Precision vs tamaño
+plt.figure(figsize=(8, 6))
+plt.plot(lc_sizes, lc_train_precisions, marker='o', label="Train Precision")
+plt.plot(lc_sizes, lc_val_precisions,   marker='o', label="Validación Precision")
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("Precision")
+plt.title("Curva por Tamaño - Precisión - Regresión Logística")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/logistic_regression/lc_size_precision.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] lc_size_precision.png")
+
+# F1 vs tamaño
+plt.figure(figsize=(8, 6))
+plt.plot(lc_sizes, lc_train_f1s, marker='o', label="Train F1")
+plt.plot(lc_sizes, lc_val_f1s,   marker='o', label="Validación F1")
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("F1-score")
+plt.title("Curva por Tamaño - F1 - Regresión Logística")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/logistic_regression/lc_size_f1.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] lc_size_f1.png")
+
 # -------------------------
 # 26. Barras: métricas Train / Validación / Test
 # -------------------------

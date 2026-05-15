@@ -1,7 +1,7 @@
 {
     "model": "Logistic Regression",
     "best_threshold": 0.51,
-    "training_time_seconds": 0.4127,
+    "training_time_seconds": 0.4211,
     "metrics": {
         "accuracy": 0.883,
         "precision": 0.8809,

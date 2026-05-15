@@ -25,11 +25,29 @@ from sklearn.preprocessing import StandardScaler
 
 from scipy.sparse import hstack
 
+import xgboost as xgb
 from xgboost import XGBClassifier
+
+from tqdm import tqdm
+
+
+class TqdmCallback(xgb.callback.TrainingCallback):
+    """Barra de progreso tqdm para el entrenamiento de XGBoost."""
+    def __init__(self, total, desc="Entrenando XGBoost"):
+        self.pbar = tqdm(total=total, desc=desc, unit="ronda")
+
+    def after_iteration(self, model, epoch, evals_log):
+        self.pbar.update(1)
+        return False
+
+    def after_training(self, model):
+        self.pbar.close()
+        return model
 
 # =========================================================
 # 1. Cargar datos
 # =========================================================
+print("[1/6] Cargando datos...")
 df = pd.read_csv("../Data/dataset_preprocesado_binario.csv")
 
 numeric_features = [
@@ -110,6 +128,7 @@ vectorizer = TfidfVectorizer(
     max_df=0.85
 )
 
+print("[2/6] Vectorizando TF-IDF...")
 # FIT SOLO TRAIN
 X_train_tfidf = vectorizer.fit_transform(X_text_train)
 
@@ -126,6 +145,7 @@ X_test_tfidf = vectorizer.transform(X_text_test)
 # -------------------------
 scaler = StandardScaler()
 
+print("[3/6] Normalizando features numéricas...")
 # FIT SOLO TRAIN
 X_train_num = scaler.fit_transform(X_num_train)
 
@@ -140,6 +160,7 @@ X_test_num = scaler.transform(X_num_test)
 # -------------------------
 # 7. Combinar
 # -------------------------
+print("[4/6] Combinando features TF-IDF + numéricas...")
 X_train_final = hstack([X_train_tfidf, X_train_num]).tocsr()
 X_val_final   = hstack([X_val_tfidf,   X_val_num  ]).tocsr()
 X_test_final  = hstack([X_test_tfidf,  X_test_num ]).tocsr()
@@ -152,14 +173,16 @@ X_test_final  = hstack([X_test_tfidf,  X_test_num ]).tocsr()
 # 8. Modelo XGBoost
 # -------------------------
 model = XGBClassifier(
-    n_estimators=300,
+    n_estimators=1000,          # máximo; early stopping decidirá cuándo parar
+    early_stopping_rounds=30,   # para si val_loss no mejora 30 rondas seguidas
     max_depth=6,
     learning_rate=0.1,
     subsample=0.8,
     colsample_bytree=0.8,
     eval_metric="logloss",
     n_jobs=-1,
-    random_state=42
+    random_state=42,
+    callbacks=[TqdmCallback(1000)]
 )
 
 # =========================================================
@@ -169,6 +192,7 @@ model = XGBClassifier(
 # -------------------------
 # 9. Entrenamiento con eval_set para capturar logloss por ronda
 # -------------------------
+print("[5/6] Entrenando XGBoost (máx. 1000 rondas, early stopping=30)...")
 start_time = time.time()
 
 model.fit(
@@ -416,6 +440,8 @@ print("xgboost_results.json")
 # GRÁFICAS DE EVALUACIÓN
 # =========================================================
 
+print("[6/6] Generando gráficas y explicaciones XAI...")
+
 print("\n================================================")
 print("GENERANDO GRÁFICAS DE EVALUACIÓN")
 print("================================================")
@@ -434,9 +460,12 @@ train_logloss = evals['validation_0']['logloss']
 val_logloss   = evals['validation_1']['logloss']
 rounds        = list(range(1, len(train_logloss) + 1))
 
+best_iter = model.best_iteration + 1
+
 plt.figure(figsize=(8, 6))
 plt.plot(rounds, train_logloss, label="Train Loss")
 plt.plot(rounds, val_logloss,   label="Validación Loss")
+plt.axvline(x=best_iter, color='red', linestyle='--', label=f"Early stop (ronda {best_iter})")
 plt.xlabel("Ronda de boosting (n_estimators)")
 plt.ylabel("Log Loss")
 plt.title("Curva de Aprendizaje - Loss - XGBoost")
@@ -454,15 +483,20 @@ print("[OK] learning_curve_loss.png")
 # =========================================================
 # 25. Curva de Precision por checkpoints de ronda
 # =========================================================
-# iteration_range permite predecir usando solo los primeros N árboles
-# sin necesidad de reentrenar el modelo
+# Los checkpoints van hasta model.best_iteration (donde paró el early stopping)
+# iteration_range permite predecir con los primeros N árboles sin reentrenar
 
-tree_checkpoints = [10, 25, 50, 75, 100, 150, 200, 250, 300]
+best_iter = model.best_iteration + 1   # +1 porque best_iteration es 0-indexed
+step = max(10, best_iter // 10)
+tree_checkpoints = list(range(step, best_iter + step, step))
+tree_checkpoints = [t for t in tree_checkpoints if t <= best_iter]
+if best_iter not in tree_checkpoints:
+    tree_checkpoints.append(best_iter)
 
 conv_train_precisions = []
 conv_val_precisions   = []
 
-for n_trees in tree_checkpoints:
+for n_trees in tqdm(tree_checkpoints, desc="Checkpoints precisión"):
 
     tp = model.predict_proba(
         X_train_final,
@@ -484,6 +518,7 @@ for n_trees in tree_checkpoints:
 plt.figure(figsize=(8, 6))
 plt.plot(tree_checkpoints, conv_train_precisions, marker='o', label="Train Precision")
 plt.plot(tree_checkpoints, conv_val_precisions,   marker='o', label="Validación Precision")
+plt.axvline(x=best_iter, color='red', linestyle='--', label=f"Early stop (ronda {best_iter})")
 plt.xlabel("Ronda de boosting (n_estimators)")
 plt.ylabel("Precision")
 plt.title("Curva de Aprendizaje - Precisión - XGBoost")
@@ -497,6 +532,108 @@ plt.savefig(
 plt.close()
 
 print("[OK] learning_curve_precision.png")
+
+# =========================================================
+# Curvas por tamaño del conjunto de entrenamiento
+# =========================================================
+# El vectorizer y el scaler ya están ajustados sobre el 100% de train.
+# XGBoost usa log_loss con predict_proba y best_threshold para F1/Precision.
+
+from sklearn.metrics import log_loss as sklearn_log_loss
+
+n_train_total = X_train_final.shape[0]
+lc_fractions  = np.linspace(0.1, 1.0, 10)
+lc_sizes      = [max(50, int(f * n_train_total)) for f in lc_fractions]
+
+lc_train_losses     = []
+lc_val_losses       = []
+lc_train_precisions = []
+lc_val_precisions   = []
+lc_train_f1s        = []
+lc_val_f1s          = []
+
+for n in tqdm(lc_sizes, desc="Curvas por tamaño"):
+
+    X_sub = X_train_final[:n]
+    y_sub = y_train.iloc[:n]
+
+    lc_xgb = XGBClassifier(
+        n_estimators=best_iter,
+        max_depth=6,
+        learning_rate=0.1,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        eval_metric="logloss",
+        n_jobs=-1,
+        random_state=42
+    )
+    lc_xgb.fit(X_sub, y_sub, verbose=False)
+
+    tp = lc_xgb.predict_proba(X_sub)
+    vp = lc_xgb.predict_proba(X_val_final)
+
+    lc_train_losses.append(sklearn_log_loss(y_sub, tp))
+    lc_val_losses.append(sklearn_log_loss(y_val,   vp))
+
+    train_pred_lc = (tp[:, 1] >= best_threshold).astype(int)
+    val_pred_lc   = (vp[:, 1] >= best_threshold).astype(int)
+
+    lc_train_precisions.append(precision_score(y_sub, train_pred_lc))
+    lc_val_precisions.append(precision_score(y_val,   val_pred_lc))
+
+    lc_train_f1s.append(f1_score(y_sub, train_pred_lc))
+    lc_val_f1s.append(f1_score(y_val,   val_pred_lc))
+
+# Loss vs tamaño
+plt.figure(figsize=(8, 6))
+plt.plot(lc_sizes, lc_train_losses, marker='o', label="Train Loss")
+plt.plot(lc_sizes, lc_val_losses,   marker='o', label="Validación Loss")
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("Log Loss")
+plt.title("Curva por Tamaño - Loss - XGBoost")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/xgboost/lc_size_loss.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] lc_size_loss.png")
+
+# Precision vs tamaño
+plt.figure(figsize=(8, 6))
+plt.plot(lc_sizes, lc_train_precisions, marker='o', label="Train Precision")
+plt.plot(lc_sizes, lc_val_precisions,   marker='o', label="Validación Precision")
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("Precision")
+plt.title("Curva por Tamaño - Precisión - XGBoost")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/xgboost/lc_size_precision.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] lc_size_precision.png")
+
+# F1 vs tamaño
+plt.figure(figsize=(8, 6))
+plt.plot(lc_sizes, lc_train_f1s, marker='o', label="Train F1")
+plt.plot(lc_sizes, lc_val_f1s,   marker='o', label="Validación F1")
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("F1-score")
+plt.title("Curva por Tamaño - F1 - XGBoost")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/xgboost/lc_size_f1.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] lc_size_f1.png")
 
 # -------------------------
 # 26. Barras: métricas Train / Validación / Test

@@ -1,4 +1,3 @@
-import warnings
 import pandas as pd
 import numpy as np
 import time
@@ -7,11 +6,10 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from sklearn.exceptions import ConvergenceWarning
-
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import LinearSVC
+from sklearn.linear_model import SGDClassifier
 
 from sklearn.metrics import (
     accuracy_score,
@@ -362,52 +360,57 @@ print("================================================")
 os.makedirs("graficas/svm", exist_ok=True)
 
 # =========================================================
-# 21. Curvas de convergencia (Hinge Loss y Precision vs iteraciones)
+# 21. Curvas de aprendizaje por época (SGDClassifier hinge)
 # =========================================================
-# Se entrena LinearSVC con max_iter creciente y tol muy bajo
-# para mostrar la convergencia del solver (equivalente a epochs)
-# La loss del SVM es Hinge Loss, no log-loss
+# LinearSVC con coordenadas descenso converge casi inmediatamente
+# en datos de texto linealmente separables -> curvas planas.
+# SGDClassifier con loss='hinge' es matemáticamente equivalente
+# al SVM lineal pero entrena por épocas estocásticas, mostrando
+# una convergencia gradual real. warm_start=True permite acumular
+# épocas llamando fit() varias veces.
 
-iter_checkpoints = [50, 100, 200, 500, 1000, 2000, 3000]
+n_epochs = 50
+epochs_axis = list(range(1, n_epochs + 1))
 
 conv_train_losses     = []
 conv_val_losses       = []
 conv_train_precisions = []
 conv_val_precisions   = []
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", ConvergenceWarning)
-    for n_iter in iter_checkpoints:
+sgd_conv = SGDClassifier(
+    loss='hinge',
+    alpha=1e-4,
+    max_iter=1,
+    warm_start=True,
+    shuffle=True,
+    random_state=42,
+    tol=None
+)
 
-        conv_svm = LinearSVC(
-            C=0.5,
-            class_weight=None,
-            max_iter=n_iter,
-            tol=1e-10
-        )
+for epoch in range(n_epochs):
 
-        conv_svm.fit(X_train_final, y_train)
+    sgd_conv.fit(X_train_final, y_train)
 
-        train_scores_conv = conv_svm.decision_function(X_train_final)
-        val_scores_conv   = conv_svm.decision_function(X_val_final)
+    train_scores_conv = sgd_conv.decision_function(X_train_final)
+    val_scores_conv   = sgd_conv.decision_function(X_val_final)
 
-        conv_train_losses.append(hinge_loss(y_train, train_scores_conv))
-        conv_val_losses.append(hinge_loss(y_val,   val_scores_conv))
+    conv_train_losses.append(hinge_loss(y_train, train_scores_conv))
+    conv_val_losses.append(hinge_loss(y_val,   val_scores_conv))
 
-        conv_train_precisions.append(
-            precision_score(y_train, conv_svm.predict(X_train_final))
-        )
-        conv_val_precisions.append(
-            precision_score(y_val, conv_svm.predict(X_val_final))
-        )
+    conv_train_precisions.append(
+        precision_score(y_train, sgd_conv.predict(X_train_final))
+    )
+    conv_val_precisions.append(
+        precision_score(y_val, sgd_conv.predict(X_val_final))
+    )
 
 # Hinge Loss curve
 plt.figure(figsize=(8, 6))
-plt.plot(iter_checkpoints, conv_train_losses, marker='o', label="Train Hinge Loss")
-plt.plot(iter_checkpoints, conv_val_losses,   marker='o', label="Validación Hinge Loss")
-plt.xlabel("Iteraciones del solver")
+plt.plot(epochs_axis, conv_train_losses, label="Train Hinge Loss")
+plt.plot(epochs_axis, conv_val_losses,   label="Validación Hinge Loss")
+plt.xlabel("Época")
 plt.ylabel("Hinge Loss")
-plt.title("Curva de Aprendizaje - Loss - SVM (LinearSVC)")
+plt.title("Curva de Aprendizaje - Loss - SVM (SGD Hinge)")
 plt.legend()
 plt.grid()
 plt.tight_layout()
@@ -421,11 +424,11 @@ print("[OK] learning_curve_loss.png")
 
 # Precision curve
 plt.figure(figsize=(8, 6))
-plt.plot(iter_checkpoints, conv_train_precisions, marker='o', label="Train Precision")
-plt.plot(iter_checkpoints, conv_val_precisions,   marker='o', label="Validación Precision")
-plt.xlabel("Iteraciones del solver")
+plt.plot(epochs_axis, conv_train_precisions, label="Train Precision")
+plt.plot(epochs_axis, conv_val_precisions,   label="Validación Precision")
+plt.xlabel("Época")
 plt.ylabel("Precision")
-plt.title("Curva de Aprendizaje - Precisión - SVM (LinearSVC)")
+plt.title("Curva de Aprendizaje - Precisión - SVM (SGD Hinge)")
 plt.legend()
 plt.grid()
 plt.tight_layout()
@@ -436,6 +439,101 @@ plt.savefig(
 plt.close()
 
 print("[OK] learning_curve_precision.png")
+
+# =========================================================
+# Curvas por tamaño del conjunto de entrenamiento
+# =========================================================
+# El vectorizer y el scaler ya están ajustados sobre el 100% de train.
+# SVM usa decision_function -> hinge_loss para la curva de loss.
+
+n_train_total = X_train_final.shape[0]
+lc_fractions  = np.linspace(0.1, 1.0, 10)
+lc_sizes      = [max(50, int(f * n_train_total)) for f in lc_fractions]
+
+lc_train_losses     = []
+lc_val_losses       = []
+lc_train_precisions = []
+lc_val_precisions   = []
+lc_train_f1s        = []
+lc_val_f1s          = []
+
+for n in lc_sizes:
+
+    X_sub = X_train_final[:n]
+    y_sub = y_train.iloc[:n]
+
+    lc_svm = LinearSVC(
+        C=0.5,
+        class_weight=None,
+        max_iter=3000
+    )
+    lc_svm.fit(X_sub, y_sub)
+
+    train_scores_lc = lc_svm.decision_function(X_sub)
+    val_scores_lc   = lc_svm.decision_function(X_val_final)
+
+    lc_train_losses.append(hinge_loss(y_sub, train_scores_lc))
+    lc_val_losses.append(hinge_loss(y_val,   val_scores_lc))
+
+    train_pred_lc = lc_svm.predict(X_sub)
+    val_pred_lc   = lc_svm.predict(X_val_final)
+
+    lc_train_precisions.append(precision_score(y_sub, train_pred_lc))
+    lc_val_precisions.append(precision_score(y_val,   val_pred_lc))
+
+    lc_train_f1s.append(f1_score(y_sub, train_pred_lc))
+    lc_val_f1s.append(f1_score(y_val,   val_pred_lc))
+
+# Loss vs tamaño
+plt.figure(figsize=(8, 6))
+plt.plot(lc_sizes, lc_train_losses, marker='o', label="Train Hinge Loss")
+plt.plot(lc_sizes, lc_val_losses,   marker='o', label="Validación Hinge Loss")
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("Hinge Loss")
+plt.title("Curva por Tamaño - Loss - SVM (LinearSVC)")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/svm/lc_size_loss.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] lc_size_loss.png")
+
+# Precision vs tamaño
+plt.figure(figsize=(8, 6))
+plt.plot(lc_sizes, lc_train_precisions, marker='o', label="Train Precision")
+plt.plot(lc_sizes, lc_val_precisions,   marker='o', label="Validación Precision")
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("Precision")
+plt.title("Curva por Tamaño - Precisión - SVM (LinearSVC)")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/svm/lc_size_precision.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] lc_size_precision.png")
+
+# F1 vs tamaño
+plt.figure(figsize=(8, 6))
+plt.plot(lc_sizes, lc_train_f1s, marker='o', label="Train F1")
+plt.plot(lc_sizes, lc_val_f1s,   marker='o', label="Validación F1")
+plt.xlabel("Tamaño del conjunto de entrenamiento")
+plt.ylabel("F1-score")
+plt.title("Curva por Tamaño - F1 - SVM (LinearSVC)")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+plt.savefig(
+    "graficas/svm/lc_size_f1.png",
+    bbox_inches='tight'
+)
+plt.close()
+print("[OK] lc_size_f1.png")
 
 # -------------------------
 # 22. Barras: métricas Train / Validación / Test

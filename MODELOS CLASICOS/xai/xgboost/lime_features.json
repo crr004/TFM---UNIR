@@ -1,66 +1,66 @@
 {
-    "original_text": "ERC y el PDeCAT siguen reacios a apoyar los Presupuestos, que contemplan 2.251 millones en inversión para Catalunya Las formaciones independentistas dejan la puerta abierta a presentar su propia enmienda a la totalidad del proyecto del Gobierno de Sánchez",
-    "processed_text": "erc pdecat seguir reacio apoyar presupuesto contemplar numero millón inversión catalunya formación independentista dejar puerta abierto presentar enmienda totalidad proyecto gobierno sánchez",
+    "original_text": "Pablo Iglesias: 'El Partido Popular ha necesitado controlar a los jueces para no desaparecer como partido' El ex líder de Podemos, en una entrevista en el programa En la Frontera, subraya que en la actualidad la derecha solo puede pactar con Vox, ya que el modelo de ultraderecha, el modelo de Ayuso, es el que se acabaría imponiéndose en el PP.",
+    "processed_text": "pablo iglesia partido popular necesitar controlar juez no desaparecer partido líder entrevista programa frontera subrayar actualidad derecha pactar vox modelo ultraderecha modelo ayuso acabar imponer él",
     "features": [
         {
-            "feature": "ERC",
-            "weight": 0.09805088344073772
+            "feature": "Ayuso",
+            "weight": 0.07320884883100581
         },
         {
-            "feature": "Sánchez",
-            "weight": 0.09122523986352819
+            "feature": "Popular",
+            "weight": 0.04643979130173303
         },
         {
-            "feature": "2",
-            "weight": -0.0035865964155978327
+            "feature": "Iglesias",
+            "weight": 0.026846559584661443
         },
         {
-            "feature": "contemplan",
-            "weight": 0.003281361283953657
+            "feature": "Vox",
+            "weight": 0.023649207811915457
         },
         {
-            "feature": "inversión",
-            "weight": -0.003048387583884316
+            "feature": "Pablo",
+            "weight": -0.014892755287646916
         },
         {
-            "feature": "a",
-            "weight": -0.0026641063372853163
+            "feature": "ultraderecha",
+            "weight": 0.014277877646302927
         },
         {
-            "feature": "en",
-            "weight": 0.0023802272951901327
+            "feature": "partido",
+            "weight": -0.010202318568852769
         },
         {
-            "feature": "de",
-            "weight": 0.002244410124433638
+            "feature": "Partido",
+            "weight": 0.007856661802201348
         },
         {
-            "feature": "PDeCAT",
-            "weight": 0.0021709444578286
+            "feature": "modelo",
+            "weight": 0.007818836978772125
         },
         {
-            "feature": "Catalunya",
-            "weight": -0.002002859955543815
+            "feature": "derecha",
+            "weight": 0.003708031998575031
         },
         {
-            "feature": "abierta",
-            "weight": -0.0018554944786052007
+            "feature": "controlar",
+            "weight": 0.003337558258946035
         },
         {
-            "feature": "reacios",
-            "weight": 0.0017144890745914264
+            "feature": "desaparecer",
+            "weight": 0.0032826572303906666
         },
         {
-            "feature": "la",
-            "weight": -0.0017143560918624755
+            "feature": "como",
+            "weight": -0.0032359223058438975
         },
         {
-            "feature": "millones",
-            "weight": 0.00165234379456253
+            "feature": "pactar",
+            "weight": 0.0029485391449189657
         },
         {
-            "feature": "del",
-            "weight": 0.001633207745220142
+            "feature": "no",
+            "weight": 0.0028693041493506443
         }
     ]
 }
