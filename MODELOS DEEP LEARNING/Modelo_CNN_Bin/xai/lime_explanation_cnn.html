@@ -37089,28 +37089,28 @@
 /***/ })
 /******/ ]);
 //# sourceMappingURL=bundle.js.map </script></head><body>
-        <div class="lime top_div" id="top_div2BDPTGVP8PIG1MJ"></div>
+        <div class="lime top_div" id="top_div21EU7UXMW5HKMTA"></div>
         
         <script>
-        var top_div = d3.select('#top_div2BDPTGVP8PIG1MJ').classed('lime top_div', true);
+        var top_div = d3.select('#top_div21EU7UXMW5HKMTA').classed('lime top_div', true);
         
             var pp_div = top_div.append('div')
                                 .classed('lime predict_proba', true);
             var pp_svg = pp_div.append('svg').style('width', '100%');
-            var pp = new lime.PredictProba(pp_svg, ["REAL", "FAKE"], [0.13768213987350464, 0.8623178601264954]);
+            var pp = new lime.PredictProba(pp_svg, ["REAL", "FAKE"], [0.13406312465667725, 0.8659368753433228]);
             
         
         var exp_div;
             var exp = new lime.Explanation(["REAL", "FAKE"]);
         
                 exp_div = top_div.append('div').classed('lime explanation', true);
-                exp.show([["mediante", -0.08867197166656124], ["mañana", -0.016532872825982668], ["decreto", -0.005468098756949391], ["todos", -0.004226271974553296], ["ahorros", -0.0032626637409146437], ["planea", -0.002821292685953686], ["de", 0.002556585201347459], ["secreto", 0.0019223245510236297], ["un", 0.0014223599075958854], ["confiscar", 0.00126483315775191], ["los", -0.0010573283139891179], ["gobierno", 0.0008481139124497183]], 0, exp_div);
+                exp.show([["mediante", -0.015336537369455913], ["decreto", -0.0024548049403300535], ["secreto", -0.0019476472812446908], ["un", -0.0015316443845439058], ["los", -0.0014926068817250474], ["todos", -0.0007318549256640054], ["de", -0.0006232339437140505], ["Urgente", -0.00043336989028848146], ["confiscar", -0.0003990828989224419], ["ahorros", 0.000358328561313665], ["ciudadanos", -0.0002425682604604234], ["mañana", 0.00018886154308392255]], 0, exp_div);
                 
                 exp_div = top_div.append('div').classed('lime explanation', true);
-                exp.show([["mediante", 0.08867197166656124], ["mañana", 0.016532872825982668], ["decreto", 0.005468098756949391], ["todos", 0.004226271974553296], ["ahorros", 0.0032626637409146437], ["planea", 0.002821292685953686], ["de", -0.002556585201347459], ["secreto", -0.0019223245510236297], ["un", -0.0014223599075958854], ["confiscar", -0.00126483315775191], ["los", 0.0010573283139891179], ["gobierno", -0.0008481139124497183]], 1, exp_div);
+                exp.show([["mediante", 0.0153365373694559], ["decreto", 0.002454804940330054], ["secreto", 0.0019476472812446938], ["un", 0.001531644384543907], ["los", 0.00149260688172505], ["todos", 0.000731854925664006], ["de", 0.0006232339437140495], ["Urgente", 0.00043336989028848076], ["confiscar", 0.0003990828989224429], ["ahorros", -0.00035832856131366405], ["ciudadanos", 0.00024256826046042094], ["mañana", -0.00018886154308392052]], 1, exp_div);
                 
         var raw_div = top_div.append('div');
-            exp.show_raw_text([["mediante", 81, -0.08867197166656124], ["ma\u00f1ana", 74, -0.016532872825982668], ["decreto", 93, -0.005468098756949391], ["todos", 38, -0.004226271974553296], ["ahorros", 48, -0.0032626637409146437], ["planea", 21, -0.002821292685953686], ["de", 56, 0.002556585201347459], ["secreto", 101, 0.0019223245510236297], ["un", 90, 0.0014223599075958854], ["confiscar", 28, 0.00126483315775191], ["los", 44, -0.0010573283139891179], ["los", 59, -0.0010573283139891179], ["gobierno", 12, 0.0008481139124497183]], 0, "Urgente: El gobierno planea confiscar todos los ahorros de los ciudadanos ma\u00f1ana mediante un decreto secreto.", raw_div, true);
+            exp.show_raw_text([["mediante", 81, -0.015336537369455913], ["decreto", 93, -0.0024548049403300535], ["secreto", 101, -0.0019476472812446908], ["un", 90, -0.0015316443845439058], ["los", 44, -0.0014926068817250474], ["los", 59, -0.0014926068817250474], ["todos", 38, -0.0007318549256640054], ["de", 56, -0.0006232339437140505], ["Urgente", 0, -0.00043336989028848146], ["confiscar", 28, -0.0003990828989224419], ["ahorros", 48, 0.000358328561313665], ["ciudadanos", 63, -0.0002425682604604234], ["ma\u00f1ana", 74, 0.00018886154308392255]], 0, "Urgente: El gobierno planea confiscar todos los ahorros de los ciudadanos ma\u00f1ana mediante un decreto secreto.", raw_div, true);
             
         </script>
         </body></html>
