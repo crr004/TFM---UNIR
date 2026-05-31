@@ -1,0 +1,82 @@
+[
+    {
+        "feature": "bárcena",
+        "importance": 1.7268223762512207
+    },
+    {
+        "feature": "aznar",
+        "importance": 1.385708212852478
+    },
+    {
+        "feature": "jordi sevilla",
+        "importance": 1.3013490438461304
+    },
+    {
+        "feature": "lertxundi",
+        "importance": 1.2984715700149536
+    },
+    {
+        "feature": "josé primo",
+        "importance": 1.238616704940796
+    },
+    {
+        "feature": "erc",
+        "importance": 1.2204393148422241
+    },
+    {
+        "feature": "campoamor",
+        "importance": 1.1862393617630005
+    },
+    {
+        "feature": "rodríguez rubio",
+        "importance": 1.1820374727249146
+    },
+    {
+        "feature": "boluarte",
+        "importance": 1.1685363054275513
+    },
+    {
+        "feature": "eduardo rubiño",
+        "importance": 1.1671850681304932
+    },
+    {
+        "feature": "cospedal",
+        "importance": 1.1369761228561401
+    },
+    {
+        "feature": "fernandez",
+        "importance": 1.1120628118515015
+    },
+    {
+        "feature": "fac",
+        "importance": 1.0710657835006714
+    },
+    {
+        "feature": "enciso",
+        "importance": 1.0541446208953857
+    },
+    {
+        "feature": "carlos prieto",
+        "importance": 1.0150387287139893
+    },
+    {
+        "feature": "arturo torrar",
+        "importance": 1.0126372575759888
+    },
+    {
+        "feature": "maría cataluña",
+        "importance": 0.991814374923706
+    },
+    {
+        "feature": "pedro cura",
+        "importance": 0.960686206817627
+    },
+    {
+        "feature": "teo",
+        "importance": 0.9198254942893982
+    },
+    {
+        "feature": "monago",
+        "importance": 0.8915006518363953
+    }
+]

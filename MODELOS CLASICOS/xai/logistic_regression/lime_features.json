@@ -1,0 +1,66 @@
+{
+    "original_text": "Aprueban decreto para subir $50 en 2018 y $50 en 2019 a 43,514 maestros “Cien ya”, decían los carteles de los maestros sindicalizados, en la Asamblea. / Óscar Machón La Asamblea Legislativa aprobó ayer una reforma a la Ley de Salarios de 2018 que permite un aumento gradual de $50 mensuales al salario de 43,514 maestros en 2018 y de otros $50 en 2019. Para el caso de los empleados administrativos y técnicos del Ministerio de Educación, el aumento es $30 en 2018 y de $30 en 2019. Están excluidas, las personas con plazas con sobresueldo, horas clase y a los titulares de Educación. La iniciativa de ley fue presentada el pasado 7 de febrero a la Asamblea Legislativa por el ministro de Educación, Carlos Canjura, e ingresó ayer a sesión plenaria. La diputada del FMLN Lorena Peña pidió que el decreto se aprobara ayer mismo y, luego de una reunión de la Comisión de Hacienda, se aprobó con dispensa de trámite. Este decreto tendrá efecto retroactivo. El monto de $29,450,100 anual que implicará para el Estado el aumento del salario se cubrirá con “asignaciones disponibles del ramo de educación”. “Es un incremento no suficiente, pero es el incremento que en las condiciones actuales podemos hacer”, dijo. La diputada de ARENA Lucía de León llamó al gobierno a cumpla con el compromiso de que la segunda parte del aumento se desarrolle en 2019. Pedían $100 ARENA, GANA, PDC y PCN apoyaron una propuesta del Sindicato Agremiado Nacional de Educadores Salvadoreños 21 de junio del Ministerio de Eduación (Siandes) y del Sindicato de Maestras y Maestros de la Educación Pública de El Salvador (Simeduco) para aprobar un solo aumento anual de $100. Pidieron una pieza de correspondencia pero no tuvo respaldo del FMLN. Siandes, que apoyó la iniciativa del gobierno, criticó que ARENA pretendía boicotear el incremento. Israel Montano, secretario general de la Asociación Nacional de Educadores Salvadoreños (Andes 21 de Junio), dijo que ese monto habían acordado luego de negociaciones con el gobierno. Montano dijo que si se subía a $100 en 2018, el gobierno debía desembolsar $60 millones.",
+    "processed_text": "apruer decreto subir numero numero numero numero numero maestro numero decir cartel maestro sindicalizado asamblea óscar machón asamblea legislativa aprobar ayer reforma ley salario numero permitir aumento gradual numero mensual salario numero maestro numero numero numero caso empleado administrativo técnico ministerio educación aumento numero numero numero numero excluido persona plaza sobresueldo hora clase titular educación iniciativa ley presentar numero febrero asamblea legislativa ministro educación carlos canjura ingresar ayer sesión plenario diputada fmln lorena peña pedir decreto aprobar ayer reunión comisión hacienda aprobar dispensa trámite decreto efecto retroactivo monto numero numero anual implicar aumento salario cubrir asignación disponible ramo educación incremento no suficiente incremento condición actual diputada arena lucir león llamar gobierno cumplir compromiso aumento desarrollar numero pedir numero arena ganar pdc pcn apoyar propuesta sindicato agremiado nacional educador salvadoreño numero junio ministerio eduación siand sindicato maestra maestro educación público salvador simeduco aprobar aumento anual numero pedir pieza correspondencia no respaldo fmln siand apoyar iniciativa gobierno criticar arena pretender boicotear incremento israel montano secretario general asociación nacional educador salvadoreño andes numero junio monto acordar negociación gobierno montano subir numero numero gobierno deber desembolsar numero millón",
+    "features": [
+        {
+            "feature": "ayer",
+            "weight": -0.050694743972583445
+        },
+        {
+            "feature": "ARENA",
+            "weight": -0.04572593822974095
+        },
+        {
+            "feature": "Carlos",
+            "weight": -0.02355830654357779
+        },
+        {
+            "feature": "FMLN",
+            "weight": -0.01703032083542056
+        },
+        {
+            "feature": "Ministerio",
+            "weight": 0.015933321470538487
+        },
+        {
+            "feature": "anual",
+            "weight": 0.013423920679858337
+        },
+        {
+            "feature": "diputada",
+            "weight": -0.013409237295508894
+        },
+        {
+            "feature": "pieza",
+            "weight": 0.012888272629134861
+        },
+        {
+            "feature": "Salvador",
+            "weight": -0.01134639850294892
+        },
+        {
+            "feature": "Sindicato",
+            "weight": 0.011335173692581073
+        },
+        {
+            "feature": "monto",
+            "weight": -0.011127169608064234
+        },
+        {
+            "feature": "retroactivo",
+            "weight": 0.010151465499865292
+        },
+        {
+            "feature": "Nacional",
+            "weight": -0.00614671502794131
+        },
+        {
+            "feature": "salario",
+            "weight": -0.005891198954009918
+        },
+        {
+            "feature": "GANA",
+            "weight": -0.0053388445521289195
+        }
+    ]
+}

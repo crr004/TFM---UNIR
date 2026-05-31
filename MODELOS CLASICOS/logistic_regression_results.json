@@ -1,0 +1,37 @@
+{
+    "model": "Logistic Regression",
+    "best_threshold": 0.51,
+    "training_time_seconds": 0.4211,
+    "metrics": {
+        "accuracy": 0.883,
+        "precision": 0.8809,
+        "recall": 0.9166,
+        "f1_score": 0.8984,
+        "macro_f1_score": 0.8803,
+        "weighted_f1_score": 0.8826,
+        "roc_auc": 0.9454
+    },
+    "train_metrics": {
+        "accuracy": 0.9309,
+        "precision": 0.9259,
+        "recall": 0.9538,
+        "f1_score": 0.9396
+    },
+    "val_metrics": {
+        "accuracy": 0.8884,
+        "precision": 0.881,
+        "recall": 0.9275,
+        "f1_score": 0.9037
+    },
+    "confusion_matrix": [
+        [
+            4563,
+            872
+        ],
+        [
+            587,
+            6450
+        ]
+    ],
+    "classification_report": "              precision    recall  f1-score   support\n\n           0       0.89      0.84      0.86      5435\n           1       0.88      0.92      0.90      7037\n\n    accuracy                           0.88     12472\n   macro avg       0.88      0.88      0.88     12472\nweighted avg       0.88      0.88      0.88     12472\n"
+}

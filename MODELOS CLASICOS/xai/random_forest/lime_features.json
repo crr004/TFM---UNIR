@@ -1,0 +1,66 @@
+{
+    "original_text": "El Iniciativa vers per Catalunya denunciará a la Junta Electoral la proyección de los 'papeles de Diana Riba' Almeida y Carlos Prieto han cargado duramente contra PP y Cristina Narbona, así como Gabilondo ha preferido no entrar en valoraciones. Begoña Villacís, por su parte, cree que la acción no cumple los requisitos necesarios.",
+    "processed_text": "iniciativo vers per catalunya denunciar junta electoral proyección papel diana riba almeido carlos prieto cargar duramente cristina narbona gabilondo preferir no entrar valoración begoño villacís creer acción no cumplir requisito necesario",
+    "features": [
+        {
+            "feature": "per",
+            "weight": -0.10381846846990031
+        },
+        {
+            "feature": "Narbona",
+            "weight": -0.0883904382785534
+        },
+        {
+            "feature": "Prieto",
+            "weight": -0.08774414253106469
+        },
+        {
+            "feature": "vers",
+            "weight": -0.07752474062677385
+        },
+        {
+            "feature": "Cristina",
+            "weight": -0.0668039967640989
+        },
+        {
+            "feature": "Carlos",
+            "weight": -0.055546093808803716
+        },
+        {
+            "feature": "Catalunya",
+            "weight": -0.044893996137302404
+        },
+        {
+            "feature": "Diana",
+            "weight": -0.01847700843005365
+        },
+        {
+            "feature": "Riba",
+            "weight": -0.010331971931586914
+        },
+        {
+            "feature": "papeles",
+            "weight": 0.0030994465852664933
+        },
+        {
+            "feature": "cargado",
+            "weight": 0.0026542245361848597
+        },
+        {
+            "feature": "no",
+            "weight": -0.0024879212236868582
+        },
+        {
+            "feature": "entrar",
+            "weight": 0.0022021962902294915
+        },
+        {
+            "feature": "cree",
+            "weight": -0.001866984475208412
+        },
+        {
+            "feature": "Begoña",
+            "weight": 0.001859730483889654
+        }
+    ]
+}

@@ -1,0 +1,66 @@
+{
+    "original_text": "Carlos Prieto califica de 'inquietante' el acercamiento de Cs al EQUO y Aguado contraataca con la afinidad entre Iniciativa vers per Catalunya y Coalición Canaria Al exdirigente del Iniciativa vers per Catalunya y actual consejero de Transportes del gobierno regional, Antonio de la Torre, le resulta inquietante que el Iniciativa vers per Catalunya se parezca cada día más a Coalición Canaria.",
+    "processed_text": "carlos prieto calificar inquietante acercamiento equo aguado contraataco afinidad iniciativo vers per catalunya coalición canario exdirigente iniciativo vers per catalunya actual consejero transporte gobierno regional antonio torre resultar inquietante iniciativo vers per catalunya parecer coalición canario",
+    "features": [
+        {
+            "feature": "per",
+            "weight": -0.10073207536657736
+        },
+        {
+            "feature": "EQUO",
+            "weight": -0.08194012243645313
+        },
+        {
+            "feature": "Prieto",
+            "weight": -0.0562651467911206
+        },
+        {
+            "feature": "vers",
+            "weight": -0.05396625745082646
+        },
+        {
+            "feature": "Iniciativa",
+            "weight": 0.03306367424420593
+        },
+        {
+            "feature": "Carlos",
+            "weight": -0.03192396505939428
+        },
+        {
+            "feature": "Antonio",
+            "weight": -0.020409640710199437
+        },
+        {
+            "feature": "Coalición",
+            "weight": -0.01615246311759775
+        },
+        {
+            "feature": "afinidad",
+            "weight": 0.01444849558302755
+        },
+        {
+            "feature": "exdirigente",
+            "weight": 0.013496769305497652
+        },
+        {
+            "feature": "regional",
+            "weight": 0.012755012007070474
+        },
+        {
+            "feature": "Canaria",
+            "weight": -0.011830018383672668
+        },
+        {
+            "feature": "gobierno",
+            "weight": 0.010576998609934557
+        },
+        {
+            "feature": "Aguado",
+            "weight": 0.006288953187341379
+        },
+        {
+            "feature": "Catalunya",
+            "weight": -0.005570340675391371
+        }
+    ]
+}
