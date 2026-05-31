@@ -75,7 +75,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints/
-*.ipynb
+
 
 # IPython
 profile_default/
@@ -138,6 +138,11 @@ desktop.ini
 # Project-specific generated files
 Data/Bin/Data_Bin_Classifier.csv
 dataset_preprocesado_binario.csv
+app/.env
+app/frontend/node_modules/
+app/frontend/dist/
+app/backend/data/*.csv
+!app/backend/data/.gitkeep
 
 # Coverage
 coverage.xml

@@ -1,0 +1,48 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: app/Dockerfile
+      target: backend-dev
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/srv/app/backend
+      - ./backend/data:/srv/app/backend/data
+      - ../BETO/artifacts/model:/srv/BETO/artifacts/model:ro
+    restart: unless-stopped
+
+  frontend:
+    image: node:22-bookworm-slim
+    working_dir: /srv/app/frontend
+    command: sh -c "if [ ! -d node_modules/vue ]; then npm install --no-audit --no-fund; fi && npm run dev -- --host 0.0.0.0 --port 5173"
+    environment:
+      VITE_API_BASE_URL: ""
+      VITE_API_PROXY_TARGET: http://backend:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/srv/app/frontend
+      - frontend_node_modules:/srv/app/frontend/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  detectia-prod:
+    profiles: ["prod"]
+    build:
+      context: ..
+      dockerfile: app/Dockerfile
+      target: backend-runtime
+    env_file:
+      - .env
+    ports:
+      - "8080:8000"
+    volumes:
+      - ./backend/data:/srv/app/backend/data
+    restart: unless-stopped
+
+volumes:
+  frontend_node_modules:

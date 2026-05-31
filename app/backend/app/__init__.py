@@ -1,0 +1,1 @@
+"""DetectIA backend package."""
