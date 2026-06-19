@@ -10,13 +10,16 @@ const articles = ref([]);
 const selectedIndex = ref(0);
 const loadingNews = ref(false);
 const classifying = ref(false);
+const evaluating = ref(false);
 const errorMessage = ref("");
 const result = ref(null);
+const evaluation = ref(null);
 
 const selectedArticle = computed(() => articles.value[selectedIndex.value] ?? null);
 
 watch(selectedIndex, () => {
   result.value = null;
+  evaluation.value = null;
   errorMessage.value = "";
 });
 
@@ -80,6 +83,7 @@ async function classifySelected() {
   }
 
   classifying.value = true;
+  evaluation.value = null;
   errorMessage.value = "";
 
   try {
@@ -97,8 +101,34 @@ async function classifySelected() {
   }
 }
 
+async function evaluateJustification() {
+  if (!result.value || !selectedArticle.value) return;
+  evaluating.value = true;
+  errorMessage.value = "";
+  try {
+    evaluation.value = await request("/api/evaluate", {
+      method: "POST",
+      body: JSON.stringify({
+        article: selectedArticle.value,
+        prediction_label: result.value.prediction_label,
+        justification: result.value.justification,
+      }),
+    });
+  } catch (error) {
+    errorMessage.value = error.message;
+  } finally {
+    evaluating.value = false;
+  }
+}
+
 function probabilityText(value) {
   return `${Math.round((value || 0) * 100)}%`;
+}
+
+function scoreColor(val) {
+  if (val >= 4) return "#69e3b7";
+  if (val >= 3) return "#fbbf24";
+  return "#ff7c96";
 }
 
 onMounted(async () => {
@@ -232,6 +262,44 @@ onMounted(async () => {
             <summary>Texto preprocesado enviado a BETO</summary>
             <p>{{ result.processed_text }}</p>
           </details>
+
+          <div class="result-block">
+            <button
+              class="button ghost"
+              :disabled="evaluating"
+              @click="evaluateJustification"
+            >
+              {{ evaluating ? "Evaluando..." : "Evaluar justificación (G-Eval)" }}
+            </button>
+          </div>
+
+          <div v-if="evaluation" class="result-block">
+            <span class="result-label">Evaluación G-Eval — LLM como juez</span>
+            <div class="geval-grid">
+              <div v-for="dim in [
+                { key: 'relevancia',  label: 'Relevancia',  desc: 'Basada en el artículo' },
+                { key: 'fidelidad',   label: 'Fidelidad',   desc: 'Fiel al texto original' },
+                { key: 'coherencia',  label: 'Coherencia',  desc: 'Clara y bien argumentada' },
+                { key: 'alineacion',  label: 'Alineación',  desc: 'Encaja con la predicción' },
+              ]" :key="dim.key" class="geval-item">
+                <span class="geval-label">{{ dim.label }}</span>
+                <span class="geval-desc">{{ dim.desc }}</span>
+                <span class="geval-score" :style="{ color: scoreColor(evaluation[dim.key]) }">
+                  {{ evaluation[dim.key] }}<small>/5</small>
+                </span>
+              </div>
+            </div>
+            <div class="geval-media">
+              <span>Puntuación media</span>
+              <strong :style="{ color: scoreColor(evaluation.media) }">
+                {{ evaluation.media.toFixed(2) }} / 5
+              </strong>
+            </div>
+            <details v-if="evaluation.razonamiento" class="geval-reasoning">
+              <summary>Razonamiento del juez (Chain-of-Thought)</summary>
+              <p>{{ evaluation.razonamiento }}</p>
+            </details>
+          </div>
         </div>
       </section>
     </section>

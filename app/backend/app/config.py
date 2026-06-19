@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     )
 
     beto_model_path: Path = ROOT_DIR / "BETO" / "artifacts" / "model"
-    beto_max_length: int = 256
+    beto_max_length: int = 512
     dataset_csv_path: Path = BACKEND_DIR / "data" / "classified_news.csv"
 
     gnews_api_key: str | None = None

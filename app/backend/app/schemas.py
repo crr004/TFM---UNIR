@@ -31,6 +31,12 @@ class ClassificationRequest(BaseModel):
     model_id: str
 
 
+class EvaluateRequest(BaseModel):
+    article: NewsArticle
+    prediction_label: str
+    justification: str
+
+
 class ClassificationResponse(BaseModel):
     prediction: str
     prediction_label: str
@@ -38,3 +44,12 @@ class ClassificationResponse(BaseModel):
     real_probability: float
     justification: str
     processed_text: str
+
+
+class EvaluationResponse(BaseModel):
+    relevancia: int    # 1-5: la justificación se basa en el artículo
+    fidelidad: int     # 1-5: las afirmaciones son fieles al texto
+    coherencia: int    # 1-5: bien escrita y argumentada
+    alineacion: int    # 1-5: encaja con la predicción emitida
+    media: float
+    razonamiento: str  # cadena de pensamiento del juez (CoT)

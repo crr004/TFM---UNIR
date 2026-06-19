@@ -291,3 +291,89 @@ class DatasetWriter:
 
 
 TRUNCATED_GNEWS_PATTERN = re.compile(r"\[\d+\s+chars\]", re.IGNORECASE)
+
+
+class EvaluationService:
+    """G-Eval: evaluación de la justificación del LLM usando el propio LLM como juez.
+
+    Reference: Liu et al., "G-Eval: NLG Evaluation using GPT-4 with Better
+    Human Alignment", ACL 2023.
+    """
+
+    _PROMPT = (
+        "Eres un evaluador experto en detección de noticias falsas. "
+        "Evalúa la calidad de la siguiente justificación generada automáticamente "
+        "para la clasificación de una noticia en español.\n\n"
+        "Noticia:\n"
+        "Título: {title}\n"
+        "Cuerpo: {body}\n\n"
+        "Predicción del modelo: {prediction_label}\n\n"
+        "Justificación generada:\n{justification}\n\n"
+        "PASO 1 — Razona brevemente (1-2 frases) sobre cada criterio:\n"
+        "- relevancia: ¿La justificación se basa en el contenido del artículo?\n"
+        "- fidelidad: ¿Las afirmaciones son fieles a lo que dice el artículo?\n"
+        "- coherencia: ¿La justificación es clara y bien argumentada?\n"
+        "- alineacion: ¿La justificación encaja con la predicción '{prediction_label}'?\n\n"
+        "PASO 2 — Tras razonar, asigna una puntuación del 1 al 5 (1=muy malo, 5=excelente) "
+        "a cada criterio y termina tu respuesta EXACTAMENTE con este bloque JSON, sin nada después:\n"
+        '{{"relevancia": X, "fidelidad": X, "coherencia": X, "alineacion": X}}'
+    )
+
+    def __init__(self, settings: Settings) -> None:
+        self.settings = settings
+
+    async def evaluate(
+        self, article: NewsArticle, prediction_label: str, justification: str
+    ) -> dict:
+        if not self.settings.gemini_api_key:
+            return {"relevancia": 0, "fidelidad": 0, "coherencia": 0, "alineacion": 0, "media": 0.0}
+
+        prompt = self._PROMPT.format(
+            title=article.title,
+            body=article.body[:1500],
+            prediction_label=prediction_label,
+            justification=justification,
+        )
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.0, "maxOutputTokens": 600},
+        }
+        url = f"{self.settings.gemini_base_url}/{self.settings.gemini_model}:generateContent"
+
+        async with httpx.AsyncClient(timeout=self.settings.request_timeout_seconds) as client:
+            response = await client.post(
+                url, params={"key": self.settings.gemini_api_key}, json=payload
+            )
+
+        if response.status_code >= 400:
+            return {"relevancia": 0, "fidelidad": 0, "coherencia": 0, "alineacion": 0, "media": 0.0}
+
+        data = response.json()
+        try:
+            full_text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+            # Extraer el último bloque JSON de la respuesta CoT
+            json_match = re.search(r'\{[^{}]*"relevancia"[^{}]*\}', full_text, re.DOTALL)
+            if not json_match:
+                raise ValueError("JSON no encontrado en la respuesta")
+            scores = json.loads(json_match.group())
+            vals = [
+                int(scores.get("relevancia", 0)),
+                int(scores.get("fidelidad", 0)),
+                int(scores.get("coherencia", 0)),
+                int(scores.get("alineacion", 0)),
+            ]
+            # El razonamiento es todo lo que precede al JSON
+            razonamiento = full_text[: json_match.start()].strip()
+            return {
+                "relevancia": vals[0],
+                "fidelidad": vals[1],
+                "coherencia": vals[2],
+                "alineacion": vals[3],
+                "media": round(sum(vals) / 4, 2),
+                "razonamiento": razonamiento,
+            }
+        except Exception:
+            return {
+                "relevancia": 0, "fidelidad": 0, "coherencia": 0, "alineacion": 0,
+                "media": 0.0, "razonamiento": "",
+            }

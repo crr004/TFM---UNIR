@@ -1,11 +1,11 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
-from .schemas import ClassificationRequest, ClassificationResponse, ModelOption, NewsResponse
-from .services import BetoClassifier, DatasetWriter, JustificationService, MODEL_OPTIONS, NewsService
+from .schemas import ClassificationRequest, ClassificationResponse, EvaluateRequest, EvaluationResponse, ModelOption, NewsResponse
+from .services import BetoClassifier, DatasetWriter, EvaluationService, JustificationService, MODEL_OPTIONS, NewsService
 
 
 def create_app() -> FastAPI:
@@ -23,6 +23,7 @@ def create_app() -> FastAPI:
     news_service = NewsService(settings)
     classifier = BetoClassifier(settings)
     justification_service = JustificationService(settings)
+    evaluation_service = EvaluationService(settings)
     dataset_writer = DatasetWriter(settings.dataset_csv_path)
 
     @app.get(f"{settings.api_prefix}/health")
@@ -61,6 +62,13 @@ def create_app() -> FastAPI:
             justification=justification,
             **result,
         )
+
+    @app.post(f"{settings.api_prefix}/evaluate", response_model=EvaluationResponse)
+    async def evaluate(payload: EvaluateRequest):
+        scores = await evaluation_service.evaluate(
+            payload.article, payload.prediction_label, payload.justification
+        )
+        return EvaluationResponse(**scores)
 
     dist_dir = settings.frontend_dist_dir
     if dist_dir.exists():
