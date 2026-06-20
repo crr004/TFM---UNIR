@@ -28,6 +28,7 @@ var/
 .installed.cfg
 *.egg
 pip-wheel-metadata/
+cache/
 
 # PyInstaller
 *.manifest
